@@ -20,12 +20,11 @@ async function crawlRestaurantInfo(url: string) {
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     );
 
-    await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
+    await page.goto(url, { waitUntil: "networkidle2", timeout: 10000 });
 
     // iframe 요소를 찾을 때까지 대기
     try {
-      await page.waitForSelector("iframe#entryIframe", { timeout: 10000 });
-      console.log("iframe 찾음");
+      await page.waitForSelector("iframe#entryIframe", { timeout: 3000 });
 
       // iframe의 src 속성 가져오기
       const frameSrc = await page.evaluate(() => {
@@ -37,10 +36,8 @@ async function crawlRestaurantInfo(url: string) {
         throw new Error("iframe src를 찾을 수 없습니다");
       }
 
-      console.log("iframe src:", frameSrc);
-
       // iframe 내부의 콘텐츠에 접근하기 위해 직접 iframe URL로 이동
-      await page.goto(frameSrc, { waitUntil: "networkidle2", timeout: 30000 });
+      await page.goto(frameSrc, { waitUntil: "networkidle2", timeout: 5000 });
 
       // 페이지 로딩 대기
       await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -65,7 +62,6 @@ async function crawlRestaurantInfo(url: string) {
 
         // 탭 전환 후 콘텐츠 로드 대기
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        console.log("정보 탭으로 이동 성공");
 
         // 소개 텍스트 추출
         const introductionText = await page.evaluate(() => {
@@ -74,9 +70,6 @@ async function crawlRestaurantInfo(url: string) {
         });
 
         if (introductionText) {
-          console.log("소개 텍스트 추출 성공:");
-          console.log(introductionText);
-
           // 데이터 객체에 소개 텍스트 추가
           data.introduction = introductionText;
         } else {

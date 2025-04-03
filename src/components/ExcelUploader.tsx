@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { transformExcelData } from "@/lib/excelDataTransformer";
 
 interface ExcelUploaderProps {
   onDataLoaded: (data: any[]) => void;
@@ -59,8 +60,10 @@ export function ExcelUploader({
       const result = await response.json();
 
       if (result.success) {
+        const cleanedData = transformExcelData(result.data);
+
         setUploadStatus("파일이 성공적으로 처리되었습니다.");
-        onDataLoaded(result.data);
+        onDataLoaded(cleanedData);
       } else {
         setUploadStatus(`오류: ${result.error}`);
       }

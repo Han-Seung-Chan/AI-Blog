@@ -82,17 +82,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 데이터 요약 정보 추가
-    const summary = {
-      totalRows: rows.length,
-      columns: headers,
-      sampleData: rows.slice(0, 3), // 처음 3개 행의 데이터만 미리보기로 제공
-    };
-
     return NextResponse.json({
       success: true,
       data: rows,
-      summary,
       message: `${rows.length}개의 데이터가 성공적으로 로드되었습니다.`,
     });
   } catch (error) {
