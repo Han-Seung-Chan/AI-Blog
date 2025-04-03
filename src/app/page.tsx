@@ -3,7 +3,6 @@
 import { StoreForm } from "@/components/StoreForm";
 import { ResultDisplay } from "@/components/ResultDisplay";
 import { useGeminiGeneration } from "@/hooks/useGeminiGeneration";
-import CrawlerPage from "@/components/Crawler";
 
 export default function Home() {
   const { result, loading, error, generateContent } = useGeminiGeneration();
@@ -18,8 +17,6 @@ export default function Home() {
         <StoreForm onSubmit={generateContent} isLoading={loading} />
         <ResultDisplay error={error} loading={loading} result={result} />
       </div>
-
-      <CrawlerPage />
     </div>
   );
 }

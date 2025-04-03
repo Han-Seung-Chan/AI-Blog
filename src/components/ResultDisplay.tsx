@@ -21,7 +21,7 @@ export function ResultDisplay({ error, loading, result }: ResultDisplayProps) {
             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
           </div>
         ) : result ? (
-          <div className="max-h-[600px] min-h-64 overflow-auto rounded-md bg-gray-50 p-4 break-words whitespace-pre-wrap">
+          <div className="overflow-auto rounded-md bg-gray-50 p-4 break-words whitespace-pre-wrap">
             {result}
           </div>
         ) : (

@@ -26,6 +26,9 @@ export function StoreForm({ onSubmit, isLoading }: StoreFormProps) {
     ageGroup: "20s",
   });
 
+  const [isCrawling, setIsCrawling] = useState(false);
+  const [crawlError, setCrawlError] = useState("");
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
@@ -41,6 +44,54 @@ export function StoreForm({ onSubmit, isLoading }: StoreFormProps) {
 
   const handleRadioChange = (name: string, value: string) => {
     setFormData({ ...formData, [name]: value });
+  };
+
+  const handleCrawlStoreInfo = async () => {
+    // URL 필드 확인
+    if (!formData.storeURL) {
+      setCrawlError("매장 URL을 입력해주세요");
+      return;
+    }
+
+    setCrawlError("");
+    setIsCrawling(true);
+
+    try {
+      const res = await fetch("/api/crawler", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: formData.storeURL,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "크롤링 처리 중 오류가 발생했습니다");
+      }
+
+      if (data.data && data.data.introduction) {
+        // 크롤링한 정보를 상세정보 필드에 채우기
+        setFormData({
+          ...formData,
+          storeDetails: data.data.introduction,
+        });
+      } else {
+        setCrawlError("매장 정보를 찾을 수 없습니다");
+      }
+    } catch (error) {
+      console.error("크롤링 오류:", error);
+      setCrawlError(
+        error instanceof Error
+          ? error.message
+          : "오류가 발생했습니다. 다시 시도해 주세요.",
+      );
+    } finally {
+      setIsCrawling(false);
+    }
   };
 
   const handleSubmit = () => {
@@ -70,7 +121,7 @@ export function StoreForm({ onSubmit, isLoading }: StoreFormProps) {
           <Textarea
             id="storeDetails"
             name="storeDetails"
-            placeholder="매장에 대한 상세 설명을 입력하세요"
+            placeholder="매장에 대한 상세 설명을 입력하세요 (또는 '정보 가져오기' 버튼을 눌러 자동으로 가져오세요)"
             value={formData.storeDetails}
             onChange={handleInputChange}
             className="min-h-20"
@@ -78,15 +129,39 @@ export function StoreForm({ onSubmit, isLoading }: StoreFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="storeURL">매장 주소 url</Label>
-          <Input
-            id="storeURL"
-            name="storeURL"
-            type="text"
-            placeholder="매장 주소 url"
-            value={formData.storeURL}
-            onChange={handleInputChange}
-          />
+          <Label htmlFor="storeURL">매장 주소 URL</Label>
+          <div className="flex gap-2">
+            <Input
+              id="storeURL"
+              name="storeURL"
+              type="text"
+              placeholder="네이버 지도 URL (예: https://map.naver.com/p/...)"
+              value={formData.storeURL}
+              onChange={handleInputChange}
+              className="flex-1"
+            />
+            <Button
+              onClick={handleCrawlStoreInfo}
+              disabled={isCrawling || !formData.storeURL}
+              variant="secondary"
+            >
+              {isCrawling ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  정보 가져오는 중...
+                </>
+              ) : (
+                "정보 가져오기"
+              )}
+            </Button>
+          </div>
+          {crawlError && (
+            <p className="text-destructive mt-1 text-sm">{crawlError}</p>
+          )}
+          <p className="text-muted-foreground text-xs">
+            네이버 지도 URL을 입력하고 '정보 가져오기' 버튼을 클릭하면 매장
+            정보가 자동으로 채워집니다.
+          </p>
         </div>
 
         <div className="space-y-2">
