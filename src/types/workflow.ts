@@ -7,6 +7,7 @@ export interface ProcessResult {
   result?: string;
   error?: string;
   details?: string;
+  isSelected?: boolean;
 }
 
 export interface GenerationData {

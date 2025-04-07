@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { ExcelRowData } from "@/types/excel";
 import { ProcessResult, BatchStatus, GenerationData } from "@/types/workflow";
 import { generateContent } from "@/services/ai";
 import { getRandomAgeGroup, getRandomGender } from "@/lib/random";
+import JSZip from "jszip";
 
 export function useBlogContentGenerator(
   data: ExcelRowData[],
@@ -11,9 +12,10 @@ export function useBlogContentGenerator(
   const [batchStatus, setBatchStatus] = useState<BatchStatus>("idle");
   const [results, setResults] = useState<ProcessResult[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
-  const [processedCount, setProcessedCount] = useState<number>(0);
-  const [successCount, setSuccessCount] = useState<number>(0);
-  const [failureCount, setFailureCount] = useState<number>(0);
+
+  // 숫자 대신 상태를 나타내는 boolean 값들
+  const [hasCompletedItems, setHasCompletedItems] = useState(false);
+  const [allSelected, setAllSelected] = useState(false);
 
   const processRow = async (
     row: ExcelRowData,
@@ -28,8 +30,6 @@ export function useBlogContentGenerator(
       );
 
       const storeUrl = (row.storeURL as string) || "";
-      // 네이버 지도 상세 정보 크롤링
-      // const crawledDetails = await crawlStoreInfo(storeUrl);
 
       const subKeywords = [
         row.subKeyword1 || "",
@@ -44,7 +44,6 @@ export function useBlogContentGenerator(
 
       const generationData: GenerationData = {
         storeName,
-        // storeDetails: crawledDetails || "매장 정보가 제공되지 않았습니다.",
         storeDetails: "매장 정보가 제공되지 않았습니다.",
         storeURL: storeUrl,
         mainKeyword,
@@ -61,12 +60,14 @@ export function useBlogContentGenerator(
                 ...result,
                 status: "completed",
                 result: generatedContent,
+                isSelected: true,
               }
             : result,
         ),
       );
 
-      setSuccessCount((prev) => prev + 1);
+      // 성공 항목 추가
+      setHasCompletedItems(true);
     } catch (error) {
       setResults((prev) =>
         prev.map((result, idx) =>
@@ -78,84 +79,140 @@ export function useBlogContentGenerator(
                   error instanceof Error
                     ? error.message
                     : "알 수 없는 오류가 발생했습니다",
+                isSelected: false,
               }
             : result,
         ),
       );
-
-      setFailureCount((prev) => prev + 1);
-    } finally {
-      setProcessedCount((prev) => prev + 1);
     }
   };
 
-  const startProcessing = useCallback(async () => {
-    setBatchStatus("processing");
-
-    for (let i = 0; i < data.length; i++) {
-      await processRow(data[i], i);
-    }
-
-    setBatchStatus("completed");
-  }, [data]);
-
   useEffect(() => {
     if (data.length > 0) {
+      // 모든 상태 초기화
       const initialResults: ProcessResult[] = data.map((row, index) => ({
         rowIndex: index,
         storeName: row.storeName || `데이터 #${index + 1}`,
         status: "waiting",
+        isSelected: false,
       }));
 
       setResults(initialResults);
       setBatchStatus("idle");
       setCurrentIndex(-1);
-      setProcessedCount(0);
-      setSuccessCount(0);
-      setFailureCount(0);
+      setHasCompletedItems(false);
+      setAllSelected(false);
 
-      startProcessing();
+      // 즉시 실행 함수로 비동기 처리
+      (async () => {
+        setBatchStatus("processing");
+
+        for (let i = 0; i < data.length; i++) {
+          await processRow(data[i], i);
+        }
+
+        setBatchStatus("completed");
+        setAllSelected(true);
+      })();
     }
-  }, [data, startProcessing]);
+  }, [data]);
+
+  // 체크박스 선택 상태 변경 핸들러
+  const handleSelectChange = (index: number, isSelected: boolean) => {
+    setResults((prev) =>
+      prev.map((result, idx) =>
+        idx === index ? { ...result, isSelected } : result,
+      ),
+    );
+
+    // 전체 선택 상태 업데이트
+    const completedResults = results.filter((r) => r.status === "completed");
+    const allItemsSelected =
+      completedResults.length > 0 &&
+      completedResults.every((r) => r.isSelected);
+
+    setAllSelected(allItemsSelected);
+  };
+
+  // 전체 선택/해제 토글 핸들러
+  const toggleSelectAll = () => {
+    const newSelectAllState = !allSelected;
+    setAllSelected(newSelectAllState);
+
+    setResults((prev) =>
+      prev.map((result) =>
+        result.status === "completed"
+          ? { ...result, isSelected: newSelectAllState }
+          : result,
+      ),
+    );
+  };
 
   const resetBatch = () => {
     onReset();
   };
 
-  const downloadResults = () => {
-    const successfulResults = results
-      .filter((r) => r.status === "completed")
-      .map((r) => ({
-        storeName: r.storeName,
-        content: r.result || "",
-      }));
+  // ZIP 파일로 다운로드 함수
+  const downloadResults = async () => {
+    const selectedResults = results.filter(
+      (r) => r.status === "completed" && r.isSelected,
+    );
 
-    if (successfulResults.length === 0) {
-      alert("다운로드할 결과가 없습니다.");
+    if (selectedResults.length === 0) {
+      alert("다운로드할 항목을 선택해주세요.");
       return;
     }
 
-    const jsonString = JSON.stringify(successfulResults, null, 2);
-    const blob = new Blob([jsonString], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
+    try {
+      // JSZip 인스턴스 생성
+      const zip = new JSZip();
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `blog-contents-${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+      // 각 항목을 TXT 파일로 추가
+      selectedResults.forEach((item) => {
+        if (item.result) {
+          // 파일명에 사용할 수 없는 문자 제거
+          const safeStoreName = item.storeName
+            .replace(/[\\/:*?"<>|]/g, "_")
+            .trim();
+
+          // TXT 파일로 추가
+          zip.file(`${safeStoreName}.txt`, item.result);
+        }
+      });
+
+      // ZIP 파일 생성
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+
+      // 다운로드 링크 생성 및 클릭
+      const url = URL.createObjectURL(zipBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `blog-contents-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("ZIP 파일 생성 중 오류:", error);
+      alert("파일 다운로드 중 오류가 발생했습니다.");
+    }
   };
+
+  // 선택된 항목 수 계산
+  const selectedCount = results.filter(
+    (r) => r.status === "completed" && r.isSelected,
+  ).length;
 
   return {
     batchStatus,
     results,
     currentIndex,
-    processedCount,
-    successCount,
-    failureCount,
+    allSelected,
+    hasCompletedItems,
+    selectedCount,
     resetBatch,
     downloadResults,
+    handleSelectChange,
+    toggleSelectAll,
   };
 }

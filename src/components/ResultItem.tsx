@@ -14,10 +14,23 @@ interface ResultItemProps {
   result: ProcessResult;
   index: number;
   currentIndex: number;
+  onSelectChange?: (index: number, isSelected: boolean) => void;
 }
 
-export function ResultItem({ result, index, currentIndex }: ResultItemProps) {
+export function ResultItem({
+  result,
+  index,
+  currentIndex,
+  onSelectChange,
+}: ResultItemProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  // 체크박스 변경 핸들러
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (onSelectChange) {
+      onSelectChange(index, e.target.checked);
+    }
+  };
 
   return (
     <tr
@@ -25,6 +38,16 @@ export function ResultItem({ result, index, currentIndex }: ResultItemProps) {
         currentIndex === index ? "bg-blue-50 dark:bg-blue-900/10" : ""
       }`}
     >
+      <td className="px-3 py-3">
+        {result.status === "completed" && (
+          <input
+            type="checkbox"
+            checked={result.isSelected || false}
+            onChange={handleCheckboxChange}
+            className="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
+          />
+        )}
+      </td>
       <td className="max-w-[200px] truncate px-4 py-3">
         {result.storeName || `데이터 #${index + 1}`}
       </td>
