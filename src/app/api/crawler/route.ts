@@ -20,11 +20,11 @@ async function crawlRestaurantInfo(url: string) {
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     );
 
-    await page.goto(url, { waitUntil: "networkidle2", timeout: 10000 });
+    await page.goto(url, { waitUntil: "networkidle2", timeout: 20000 });
 
     // iframe 요소를 찾을 때까지 대기
     try {
-      await page.waitForSelector("iframe#entryIframe", { timeout: 3000 });
+      await page.waitForSelector("iframe#entryIframe", { timeout: 5000 });
 
       // iframe의 src 속성 가져오기
       const frameSrc = await page.evaluate(() => {

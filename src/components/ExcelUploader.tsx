@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { transformExcelData } from "@/lib/excelDataTransformer";
+import { useFileUpload } from "@/hooks/useFileUpload";
+import { ExcelRowData } from "@/types/excel";
 
 interface ExcelUploaderProps {
-  onDataLoaded: (data: any[]) => void;
+  onDataLoaded: (data: ExcelRowData[]) => void;
   isLoading?: boolean;
 }
 
@@ -15,67 +15,13 @@ export function ExcelUploader({
   onDataLoaded,
   isLoading = false,
 }: ExcelUploaderProps) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploadStatus, setUploadStatus] = useState<string>("");
-  const [isUploading, setIsUploading] = useState(false);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      setSelectedFile(files[0]);
-      setUploadStatus("");
-    }
-  };
-
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      setUploadStatus("파일을 선택해주세요.");
-      return;
-    }
-
-    // 확장자 확인
-    const fileExtension = selectedFile.name.split(".").pop()?.toLowerCase();
-    if (fileExtension !== "xlsx" && fileExtension !== "xls") {
-      setUploadStatus("엑셀 파일(.xlsx 또는 .xls)만 업로드 가능합니다.");
-      return;
-    }
-
-    setIsUploading(true);
-    setUploadStatus("파일 처리 중...");
-
-    // FormData 객체 생성 및 파일 추가
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-
-    try {
-      const response = await fetch("/api/excel", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("파일 업로드 중 오류가 발생했습니다.");
-      }
-
-      const result = await response.json();
-
-      if (result.success) {
-        const cleanedData = transformExcelData(result.data);
-
-        setUploadStatus("파일이 성공적으로 처리되었습니다.");
-        onDataLoaded(cleanedData);
-      } else {
-        setUploadStatus(`오류: ${result.error}`);
-      }
-    } catch (error) {
-      console.error("파일 업로드 오류:", error);
-      setUploadStatus(
-        `오류: ${error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."}`,
-      );
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  const {
+    selectedFile,
+    uploadStatus,
+    isUploading,
+    handleFileChange,
+    handleUpload,
+  } = useFileUpload(onDataLoaded);
 
   return (
     <Card>

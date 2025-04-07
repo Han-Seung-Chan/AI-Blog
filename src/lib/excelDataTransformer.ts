@@ -2,7 +2,7 @@ export function transformExcelData(rows: any[]): any[] {
   // 필드명 매핑 정의
   const fieldMapping: Record<string, string> = {
     상호명: "storeName",
-    "네이버 플레이스 주소": "storeURL",
+    // "네이버 플레이스 주소": "storeURL",
     "대표 키워드": "mainKeyword",
     "서브 키워드1": "subKeyword1",
     "서브 키워드2": "subKeyword2",
