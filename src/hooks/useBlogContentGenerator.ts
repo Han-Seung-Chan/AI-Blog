@@ -27,7 +27,8 @@ export function useBlogContentGenerator(
         ),
       );
 
-      // const storeUrl = (row.storeURL as string) || "";
+      const storeUrl = (row.storeURL as string) || "";
+      // 네이버 지도 상세 정보 크롤링
       // const crawledDetails = await crawlStoreInfo(storeUrl);
 
       const subKeywords = [
@@ -45,7 +46,7 @@ export function useBlogContentGenerator(
         storeName,
         // storeDetails: crawledDetails || "매장 정보가 제공되지 않았습니다.",
         storeDetails: "매장 정보가 제공되지 않았습니다.",
-        // storeURL: storeUrl,
+        storeURL: storeUrl,
         mainKeyword,
         subKeywords,
         customerGender,

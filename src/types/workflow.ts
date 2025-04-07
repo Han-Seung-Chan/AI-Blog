@@ -12,7 +12,7 @@ export interface ProcessResult {
 export interface GenerationData {
   storeName: string;
   storeDetails: string;
-  // storeURL: string;
+  storeURL: string;
   mainKeyword: string;
   subKeywords: string[];
   customerGender: string;

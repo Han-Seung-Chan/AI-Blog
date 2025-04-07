@@ -1,6 +1,14 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2, XCircle, AlertCircle } from "lucide-react";
 import { ProcessResult } from "@/types/workflow";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface ResultItemProps {
   result: ProcessResult;
@@ -9,9 +17,13 @@ interface ResultItemProps {
 }
 
 export function ResultItem({ result, index, currentIndex }: ResultItemProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <tr
-      className={`hover:bg-muted/20 border-b ${currentIndex === index ? "bg-blue-50 dark:bg-blue-900/10" : ""}`}
+      className={`hover:bg-muted/20 border-b ${
+        currentIndex === index ? "bg-blue-50 dark:bg-blue-900/10" : ""
+      }`}
     >
       <td className="max-w-[200px] truncate px-4 py-3">
         {result.storeName || `데이터 #${index + 1}`}
@@ -44,15 +56,29 @@ export function ResultItem({ result, index, currentIndex }: ResultItemProps) {
       </td>
       <td className="px-4 py-3">
         {result.status === "completed" && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              alert(result.result);
-            }}
-          >
-            결과 보기
-          </Button>
+          <>
+            <Button variant="outline" size="sm" onClick={() => setIsOpen(true)}>
+              결과 보기
+            </Button>
+
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+              <DialogContent className="w-[90vw] max-w-3xl p-4">
+                <DialogHeader className="pb-2">
+                  <DialogTitle>
+                    {result.storeName || `데이터 #${index + 1}`} 블로그 글
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="max-h-[60vh] overflow-y-auto px-1 py-2">
+                  <p className="text-base leading-relaxed break-words whitespace-pre-line">
+                    {result.result}
+                  </p>
+                </div>
+                <DialogFooter className="pt-4">
+                  <Button onClick={() => setIsOpen(false)}>닫기</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </>
         )}
         {result.status === "failed" && (
           <span className="text-xs text-red-500">{result.error}</span>
