@@ -1,13 +1,34 @@
-import { PageClient } from "@/components/PageClient";
+"use client";
+
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 export default function Home() {
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="mb-8 text-center text-3xl font-bold">
-        엑셀 데이터로 자동 블로그 글 생성
-      </h1>
+  const { user, isAdmin, isLoading } = useAuth();
+  const router = useRouter();
+  console.log(user);
 
-      <PageClient />
+  useEffect(() => {
+    if (!isLoading) {
+      if (user) {
+        // 로그인 상태면 역할에 따라 리다이렉트
+        if (isAdmin) {
+          router.push("/admin");
+        } else {
+          router.push("/dashboard");
+        }
+      } else {
+        // 로그인 페이지로 리다이렉트
+        router.push("/login");
+      }
+    }
+  }, [user, isAdmin, isLoading, router]);
+
+  return (
+    <div className="flex h-screen items-center justify-center">
+      <Loader2 className="text-primary h-8 w-8 animate-spin" />
     </div>
   );
 }
