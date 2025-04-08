@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ExcelRowData } from "@/types/excel";
 import { ProcessResult, BatchStatus, GenerationData } from "@/types/workflow";
-import { generateContent } from "@/services/ai";
+import { generateContent } from "@/services/integration/ai-service";
 import { getRandomAgeGroup, getRandomGender } from "@/lib/random";
 import JSZip from "jszip";
 

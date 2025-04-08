@@ -3,10 +3,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { getAllBlogPosts } from "@/services/supabase";
 import { Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { AdminBlogPostList } from "@/components/admin/AdminBlogPostList";
+import { getAllBlogPosts } from "@/services/admin/admin-service";
 
 export function AdminDashboard() {
   const [stats, setStats] = useState({

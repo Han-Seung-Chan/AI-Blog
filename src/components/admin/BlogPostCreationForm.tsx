@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { generateContent } from "@/services/ai";
+import { generateContent } from "@/services/integration/ai-service";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -50,7 +50,6 @@ export function BlogPostCreationForm() {
     setIsGenerating(true);
 
     try {
-      // 기존 generateContent 함수 활용
       const result = await generateContent({
         storeName: formData.storeName,
         storeDetails: "",

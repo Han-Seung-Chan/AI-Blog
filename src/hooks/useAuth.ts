@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import {
+  getCurrentSession,
+  getUserRole,
+  loginUser,
+  registerUser,
+  logoutUser,
+  setupAuthStateChangeListener,
+} from "@/services/auth/auth-service";
 
 export function useAuth() {
   const router = useRouter();
@@ -14,22 +21,15 @@ export function useAuth() {
     const checkSession = async () => {
       try {
         setIsLoading(true);
+
         const {
           data: { session },
-        } = await supabase.auth.getSession();
-        console.log(session);
+        } = await getCurrentSession();
 
         if (session) {
-          // 사용자 정보 설정
           setUser(session.user);
 
-          // 사용자 역할 확인
-          const { data: userData } = await supabase
-            .from("users")
-            .select("role")
-            .eq("id", session.user.id)
-            .single();
-
+          const { data: userData } = await getUserRole(session.user.id);
           setIsAdmin(userData?.role === "admin");
         } else {
           setUser(null);
@@ -47,17 +47,12 @@ export function useAuth() {
     // 인증 상태 변경 리스너
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = setupAuthStateChangeListener(async (session) => {
       if (session) {
         setUser(session.user);
 
         // 사용자 역할 확인
-        const { data: userData } = await supabase
-          .from("users")
-          .select("role")
-          .eq("id", session.user.id)
-          .single();
-
+        const { data: userData } = await getUserRole(session.user.id);
         setIsAdmin(userData?.role === "admin");
       } else {
         setUser(null);
@@ -75,24 +70,11 @@ export function useAuth() {
     setIsLoading(true);
     setError("");
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "로그인 중 오류가 발생했습니다");
-      }
-
-      const userData = result.data.user;
+      // 서비스 함수 호출로 변경
+      const data = await loginUser(email, password);
 
       // 역할에 따라 리다이렉트
-      if (userData.role === "admin") {
+      if (data.user.role === "admin") {
         router.push("/admin");
       } else {
         router.push("/dashboard");
@@ -114,19 +96,8 @@ export function useAuth() {
     setIsLoading(true);
     setError("");
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password, name, role }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "회원가입 중 오류가 발생했습니다");
-      }
+      // 서비스 함수 호출로 변경
+      await registerUser(email, password, name, role);
 
       // 자동 로그인 (회원가입 후)
       await login(email, password);
@@ -140,13 +111,8 @@ export function useAuth() {
   const logout = async () => {
     setIsLoading(true);
     try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
+      // 서비스 함수 호출로 변경
+      await logoutUser();
       router.push("/login");
     } catch (err) {
       setError("로그아웃 중 오류가 발생했습니다");

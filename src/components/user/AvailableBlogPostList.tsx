@@ -3,7 +3,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { getAvailableBlogPosts, reserveBlogPost } from "@/services/supabase";
 import { Loader2, ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -13,6 +12,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  getAvailableBlogPosts,
+  reserveBlogPost,
+} from "@/services/blog/blog-service";
 
 export function AvailableBlogPostList() {
   const router = useRouter();

@@ -4,7 +4,7 @@ export async function crawlStoreInfo(url: string): Promise<string> {
       return "";
     }
 
-    const response = await fetch("/api/crawler", {
+    const response = await fetch("/api/integrations/crawler", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

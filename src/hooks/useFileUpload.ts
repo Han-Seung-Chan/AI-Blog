@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ExcelRowData } from "@/types/excel";
 import { transformExcelData } from "@/lib/excelDataTransformer";
-import { uploadExcelFile } from "@/services/excel";
+import { uploadExcelFile } from "@/services/integration/excel-service";
 
 export function useFileUpload(onDataLoaded: (data: ExcelRowData[]) => void) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);

@@ -5,7 +5,7 @@ export async function generateContent(
   formData: GenerationData,
 ): Promise<string> {
   try {
-    const res = await fetch("/api/gemini", {
+    const res = await fetch("/api/integrations/gemini", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

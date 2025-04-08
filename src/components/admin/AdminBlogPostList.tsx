@@ -3,7 +3,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { getAllBlogPosts, approveBlogPost } from "@/services/supabase";
 import {
   Check,
   Loader2,
@@ -20,6 +19,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  approveBlogPost,
+  getAllBlogPosts,
+} from "@/services/admin/admin-service";
 
 export function AdminBlogPostList() {
   const [posts, setPosts] = useState([]);

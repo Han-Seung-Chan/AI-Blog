@@ -3,10 +3,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { getAvailableBlogPosts, getMyAssignments } from "@/services/supabase";
+
 import { Loader2, FileEdit } from "lucide-react";
 import Link from "next/link";
 import { UserBlogPostList } from "@/components/user/UserBlogPostList";
+import {
+  getAvailableBlogPosts,
+  getMyAssignments,
+} from "@/services/blog/blog-service";
 
 export function UserDashboard() {
   const [stats, setStats] = useState({

@@ -5,7 +5,7 @@ export async function uploadExcelFile(file: File): Promise<UploadExcelResult> {
   formData.append("file", file);
 
   try {
-    const response = await fetch("/api/excel", {
+    const response = await fetch("/api/integrations/excel", {
       method: "POST",
       body: formData,
     });

@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
-import { getMyAssignments, completeBlogPost } from "@/services/supabase";
 import { Check, Loader2, Pencil, ExternalLink } from "lucide-react";
 import {
   Dialog,
@@ -15,6 +14,10 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import {
+  completeBlogPost,
+  getMyAssignments,
+} from "@/services/blog/blog-service";
 
 interface UserBlogPostListProps {
   onStatusChange?: () => void;
