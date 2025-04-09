@@ -1,4 +1,4 @@
-import { createBlogPost } from "@/services/supabase";
+import { createBlogPost } from "@/services/admin/admin-service";
 import { GenerationData } from "@/types/workflow";
 
 export async function generateContent(

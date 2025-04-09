@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ExcelUploader } from "@/components/ExcelUploader";
-import { BlogBatchProcessor } from "@/components/BlogBatchProcessor";
+import { ExcelUploader } from "@/components/admin/Post/ExcelUploader";
+import { BlogBatchProcessor } from "@/components/admin/Post/BlogBatchProcessor";
 import { ExcelRowData } from "@/types/excel";
 
 export function PageClient() {

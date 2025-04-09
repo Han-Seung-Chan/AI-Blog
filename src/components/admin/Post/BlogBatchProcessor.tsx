@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw, Download } from "lucide-react";
 import { useBlogContentGenerator } from "@/hooks/useBlogContentGenerator";
-import { ResultItem } from "@/components/ResultItem";
+import { ResultItem } from "@/components/admin/Post/ResultItem";
 import { ExcelRowData } from "@/types/excel";
 
 interface BlogBatchProcessorProps {
