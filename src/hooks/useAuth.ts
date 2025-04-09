@@ -70,7 +70,6 @@ export function useAuth() {
     setIsLoading(true);
     setError("");
     try {
-      // 서비스 함수 호출로 변경
       const data = await loginUser(email, password);
 
       // 역할에 따라 리다이렉트
@@ -96,7 +95,6 @@ export function useAuth() {
     setIsLoading(true);
     setError("");
     try {
-      // 서비스 함수 호출로 변경
       await registerUser(email, password, name, role);
 
       // 자동 로그인 (회원가입 후)
@@ -111,7 +109,6 @@ export function useAuth() {
   const logout = async () => {
     setIsLoading(true);
     try {
-      // 서비스 함수 호출로 변경
       await logoutUser();
       router.push("/login");
     } catch (err) {

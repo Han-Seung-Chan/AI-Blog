@@ -26,6 +26,13 @@ export async function loginUser(email: string, password: string) {
     throw new Error(result.error || "로그인 중 오류가 발생했습니다");
   }
 
+  if (result.data?.session) {
+    await supabase.auth.setSession({
+      access_token: result.data.session.access_token,
+      refresh_token: result.data.session.refresh_token,
+    });
+  }
+
   return result.data;
 }
 
