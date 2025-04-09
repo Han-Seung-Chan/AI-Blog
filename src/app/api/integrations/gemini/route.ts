@@ -1,7 +1,8 @@
+import { NextRequest, NextResponse } from "next/server";
+
 import { API_ENDPOINT } from "@/constant/gemini";
 import { BLOG_REVIEW_TEMPLATE } from "@/constant/prompts";
 import { fillPromptTemplate } from "@/lib/stringFill";
-import { NextRequest, NextResponse } from "next/server";
 
 // 재시도 설정
 const MAX_RETRIES = 5;

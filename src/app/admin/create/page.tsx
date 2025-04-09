@@ -1,6 +1,6 @@
 // import { BlogPostCreationForm } from "@/components/admin/BlogPostCreationForm";
-import { AppLayout } from "@/components/layouts/AppLayout";
 import { PageClient } from "@/components/admin/Post/PageClient";
+import { AppLayout } from "@/components/layouts/AppLayout";
 
 export default function CreateBlogPostPage() {
   return (

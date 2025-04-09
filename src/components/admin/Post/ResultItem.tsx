@@ -1,14 +1,15 @@
+import { AlertCircle,Check, Loader2, XCircle } from "lucide-react";
 import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
-import { Check, Loader2, XCircle, AlertCircle } from "lucide-react";
-import { ProcessResult } from "@/types/workflow";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
+import { ProcessResult } from "@/types/workflow";
 
 interface ResultItemProps {
   result: ProcessResult;

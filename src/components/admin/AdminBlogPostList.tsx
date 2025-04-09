@@ -1,16 +1,17 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
 import {
-  Check,
-  Loader2,
   AlertCircle,
-  User,
   Calendar,
+  Check,
   ExternalLink,
+  Loader2,
+  User,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,

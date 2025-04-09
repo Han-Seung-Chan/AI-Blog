@@ -1,10 +1,12 @@
 "use client";
 
-import { useAuth } from "@/hooks/useAuth";
-import { Navbar } from "./Navbar";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+import { useAuth } from "@/hooks/useAuth";
+
+import { Navbar } from "./Navbar";
 
 interface AppLayoutProps {
   children: React.ReactNode;

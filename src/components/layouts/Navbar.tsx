@@ -1,9 +1,10 @@
 "use client";
 
+import { LogOut, User } from "lucide-react";
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import Link from "next/link";
-import { LogOut, User } from "lucide-react";
 
 export function Navbar() {
   const { user, isAdmin, logout } = useAuth();

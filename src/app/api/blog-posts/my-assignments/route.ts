@@ -1,7 +1,8 @@
-import { supabase } from "@/lib/supabase";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
+import { supabase } from "@/lib/supabase";
+
+export async function GET() {
   try {
     // 인증 세션 확인
     const {

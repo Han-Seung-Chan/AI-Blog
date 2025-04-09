@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
 import {
   getCurrentSession,
   getUserRole,
   loginUser,
-  registerUser,
   logoutUser,
+  registerUser,
   setupAuthStateChangeListener,
 } from "@/services/auth/auth-service";
 

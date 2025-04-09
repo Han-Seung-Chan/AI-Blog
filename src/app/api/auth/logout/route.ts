@@ -1,7 +1,8 @@
-import { supabase } from "@/lib/supabase";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function POST(request: NextRequest) {
+import { supabase } from "@/lib/supabase";
+
+export async function POST() {
   try {
     // 로그아웃 처리
     const { error } = await supabase.auth.signOut();

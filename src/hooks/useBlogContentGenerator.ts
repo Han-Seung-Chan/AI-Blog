@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
-import { ExcelRowData } from "@/types/excel";
-import { ProcessResult, BatchStatus, GenerationData } from "@/types/workflow";
-import { generateContent } from "@/services/integration/ai-service";
-import { getRandomAgeGroup, getRandomGender } from "@/lib/random";
 import JSZip from "jszip";
+import { useEffect,useState } from "react";
+
+import { getRandomAgeGroup, getRandomGender } from "@/lib/random";
+import { generateContent } from "@/services/integration/ai-service";
+import { ExcelRowData } from "@/types/excel";
+import { BatchStatus, GenerationData,ProcessResult } from "@/types/workflow";
 
 export function useBlogContentGenerator(
   data: ExcelRowData[],

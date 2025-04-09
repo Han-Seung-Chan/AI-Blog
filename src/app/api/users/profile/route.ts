@@ -1,8 +1,9 @@
-import { supabase } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
 
+import { supabase } from "@/lib/supabase";
+
 // 현재 사용자 프로필 조회
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // 인증 세션 확인
     const {
