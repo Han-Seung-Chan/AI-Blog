@@ -1,6 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
 
-// 환경 변수 확인 (개발 환경에서 .env.local 파일에 저장해야 함)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 

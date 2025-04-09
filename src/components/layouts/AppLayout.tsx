@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navbar } from "./Navbar";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -22,23 +23,23 @@ export function AppLayout({
   useEffect(() => {
     // 인증이 필요한 페이지에서 비로그인 상태일 경우
     if (!isLoading && requireAuth && !user) {
-      // router.push("/login");
+      router.push("/login");
     }
 
     // 관리자 전용 페이지에서 관리자가 아닌 경우
     if (!isLoading && adminOnly && !isAdmin) {
-      // router.push("/dashboard");
+      router.push("/dashboard");
     }
   }, [user, isAdmin, isLoading, requireAuth, adminOnly, router]);
 
   // 로딩 중이거나 리다이렉트 조건에 해당하는 경우 로딩 표시
-  // if (isLoading || (requireAuth && !user) || (adminOnly && !isAdmin)) {
-  //   return (
-  //     <div className="flex h-screen items-center justify-center">
-  //       <Loader2 className="text-primary h-8 w-8 animate-spin" />
-  //     </div>
-  //   );
-  // }
+  if (isLoading || (requireAuth && !user) || (adminOnly && !isAdmin)) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="text-primary h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
