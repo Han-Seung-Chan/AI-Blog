@@ -1,4 +1,5 @@
 import { createBlogPost } from "@/services/admin/admin-service";
+import { getCurrentSession } from "@/services/auth/auth-service";
 import { GenerationData } from "@/types/workflow";
 
 export async function generateContent(
@@ -21,6 +22,11 @@ export async function generateContent(
 
     // AI 생성 컨텐츠
     const aiContent = data.text;
+
+    const {
+      data: { session },
+    } = await getCurrentSession();
+    console.log(session);
 
     // Supabase에 저장 (관리자로 로그인한 경우)
     try {
