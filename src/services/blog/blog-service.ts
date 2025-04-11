@@ -1,9 +1,16 @@
+import { getCurrentSession } from "@/services/auth/auth-service";
+
 export async function getAvailableBlogPosts() {
+  const {
+    data: { session },
+  } = await getCurrentSession();
+
   try {
     const response = await fetch("/api/blog-posts/available", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
       },
     });
 
@@ -20,11 +27,15 @@ export async function getAvailableBlogPosts() {
 }
 
 export async function reserveBlogPost(postId: string) {
+  const {
+    data: { session },
+  } = await getCurrentSession();
   try {
     const response = await fetch(`/api/blog-posts/${postId}/reserve`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
       },
     });
 
@@ -46,11 +57,15 @@ export async function completeBlogPost(
   blogUrl: string,
   notes?: string,
 ) {
+  const {
+    data: { session },
+  } = await getCurrentSession();
   try {
     const response = await fetch(`/api/blog-posts/${postId}/complete`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({
         blogUrl,
@@ -72,6 +87,9 @@ export async function completeBlogPost(
 }
 
 export async function cancelReservation(postId: string) {
+  const {
+    data: { session },
+  } = await getCurrentSession();
   try {
     const response = await fetch(
       `/api/blog-posts/${postId}/cancel-reservation`,
@@ -79,6 +97,7 @@ export async function cancelReservation(postId: string) {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
         },
       },
     );
@@ -97,11 +116,15 @@ export async function cancelReservation(postId: string) {
 }
 
 export async function getMyAssignments() {
+  const {
+    data: { session },
+  } = await getCurrentSession();
   try {
     const response = await fetch("/api/blog-posts/my-assignments", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
       },
     });
 

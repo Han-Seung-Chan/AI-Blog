@@ -1,11 +1,17 @@
+import { getCurrentSession } from "@/services/auth/auth-service";
 import { GenerationData } from "@/types/workflow";
 
 export async function createBlogPost(data: GenerationData, aiContent: string) {
+  const {
+    data: { session },
+  } = await getCurrentSession();
+
   try {
     const response = await fetch("/api/admin/blog-posts", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({
         storeName: data.storeName,
@@ -34,6 +40,10 @@ export async function createBlogPost(data: GenerationData, aiContent: string) {
 }
 
 export async function getAllBlogPosts(status?: string) {
+  const {
+    data: { session },
+  } = await getCurrentSession();
+
   try {
     const url = status
       ? `/api/admin/blog-posts?status=${status}`
@@ -43,6 +53,7 @@ export async function getAllBlogPosts(status?: string) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
       },
     });
 
@@ -59,11 +70,16 @@ export async function getAllBlogPosts(status?: string) {
 }
 
 export async function approveBlogPost(postId: string, feedback?: string) {
+  const {
+    data: { session },
+  } = await getCurrentSession();
+
   try {
     const response = await fetch(`/api/admin/blog-posts/${postId}/approve`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({
         adminFeedback: feedback,
