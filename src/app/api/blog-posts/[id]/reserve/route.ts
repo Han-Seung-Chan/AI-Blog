@@ -1,25 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { supabase } from "@/lib/supabase";
+import { verifyUserRole } from "@/lib/auth-middleware";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  context: { params: Promise<{ id: string }> },
 ) {
   try {
+    const params = await context.params;
     const postId = params.id;
 
-    // 인증 확인
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) {
-      return NextResponse.json(
-        { error: "인증되지 않았습니다." },
-        { status: 401 },
-      );
-    }
+    const { user, errorResponse } = await verifyUserRole(request, "user");
+    if (errorResponse) return errorResponse;
 
     // 블로그 글 상태 확인
     const { data: checkData, error: checkError } = await supabase
@@ -47,7 +40,7 @@ export async function PUT(
       .from("blog_posts")
       .update({
         status: "reserved",
-        assigned_to: session.user.id,
+        assigned_to: user.id,
         reserved_at: new Date(),
         updated_at: new Date(),
       })
@@ -65,7 +58,7 @@ export async function PUT(
 
     // 활동 로그 기록
     await supabase.from("activity_logs").insert({
-      user_id: session.user.id,
+      user_id: user.id,
       blog_post_id: postId,
       action: "reserve",
       status_before: "created",

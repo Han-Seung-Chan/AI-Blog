@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-
+import { verifyUserRole } from "@/lib/auth-middleware";
 import { supabase } from "@/lib/supabase";
+import { NextRequest, NextResponse } from "next/server";
 
 // 블로그 글 생성
 export async function POST(request: NextRequest) {
@@ -8,28 +8,8 @@ export async function POST(request: NextRequest) {
     const { storeName, storeURL, mainKeyword, subKeywords, aiContent } =
       await request.json();
 
-    // 인증 확인
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) {
-      return NextResponse.json(
-        { error: "인증되지 않았습니다." },
-        { status: 401 },
-      );
-    }
-
-    // 관리자 권한 확인
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", session.user.id)
-      .single();
-
-    if (userError || userData?.role !== "admin") {
-      return NextResponse.json({ error: "권한이 없습니다." }, { status: 403 });
-    }
+    const { user, errorResponse } = await verifyUserRole(request, "admin");
+    if (errorResponse) return errorResponse;
 
     // 블로그 글 생성
     const { data, error } = await supabase
@@ -43,7 +23,7 @@ export async function POST(request: NextRequest) {
         sub_keyword3: subKeywords[2] || null,
         ai_content: aiContent,
         status: "created",
-        created_by: session.user.id,
+        created_by: user.id,
         created_at: new Date(),
         updated_at: new Date(),
       })
@@ -59,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     // 활동 로그 기록
     await supabase.from("activity_logs").insert({
-      user_id: session.user.id,
+      user_id: user.id,
       blog_post_id: data.id,
       action: "create",
       status_before: null,
@@ -87,38 +67,13 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const status = url.searchParams.get("status");
 
-    // 인증 확인
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) {
-      return NextResponse.json(
-        { error: "인증되지 않았습니다." },
-        { status: 401 },
-      );
-    }
-
-    // 관리자 권한 확인
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", session.user.id)
-      .single();
-
-    if (userError || userData?.role !== "admin") {
-      return NextResponse.json({ error: "권한이 없습니다." }, { status: 403 });
-    }
+    const { errorResponse } = await verifyUserRole(request, "admin");
+    if (errorResponse) return errorResponse;
 
     // 블로그 글 조회 쿼리 구성
     let query = supabase
       .from("blog_posts")
-      .select(
-        `
-        *,
-        assigned_user:users!assigned_to(name, email)
-      `,
-      )
+      .select(`*, assigned_user:users!assigned_to(name, email)`)
       .order("created_at", { ascending: false });
 
     // 특정 상태로 필터링

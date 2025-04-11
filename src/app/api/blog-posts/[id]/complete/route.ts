@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { supabase } from "@/lib/supabase";
+import { verifyUserRole } from "@/lib/auth-middleware";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  context: { params: Promise<{ id: string }> },
 ) {
   try {
+    const params = await context.params;
     const postId = params.id;
     const { blogUrl, completionNotes } = await request.json();
 
@@ -17,17 +19,8 @@ export async function PUT(
       );
     }
 
-    // 인증 확인
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) {
-      return NextResponse.json(
-        { error: "인증되지 않았습니다." },
-        { status: 401 },
-      );
-    }
+    const { user, errorResponse } = await verifyUserRole(request, "user");
+    if (errorResponse) return errorResponse;
 
     // 블로그 글 상태 확인 (내가 예약한 글인지)
     const { data: checkData, error: checkError } = await supabase
@@ -43,10 +36,7 @@ export async function PUT(
       );
     }
 
-    if (
-      checkData.status !== "reserved" ||
-      checkData.assigned_to !== session.user.id
-    ) {
+    if (checkData.status !== "reserved" || checkData.assigned_to !== user.id) {
       return NextResponse.json(
         { error: `이 블로그 글에 대한 권한이 없습니다.` },
         { status: 403 },
@@ -64,7 +54,7 @@ export async function PUT(
         updated_at: new Date(),
       })
       .eq("id", postId)
-      .eq("assigned_to", session.user.id)
+      .eq("assigned_to", user.id)
       .select()
       .single();
 
@@ -77,7 +67,7 @@ export async function PUT(
 
     // 활동 로그 기록
     await supabase.from("activity_logs").insert({
-      user_id: session.user.id,
+      user_id: user.id,
       blog_post_id: postId,
       action: "complete",
       status_before: "reserved",

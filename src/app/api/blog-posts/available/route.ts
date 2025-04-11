@@ -1,21 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { supabase } from "@/lib/supabase";
+import { verifyUserRole } from "@/lib/auth-middleware";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // 인증 확인
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
-
-    if (sessionError || !session) {
-      return NextResponse.json(
-        { error: "인증되지 않았습니다." },
-        { status: 401 },
-      );
-    }
+    const { errorResponse } = await verifyUserRole(request, "user");
+    if (errorResponse) return errorResponse;
 
     // 작성 가능한 블로그 글 목록 조회 (status가 'created'인 것들)
     const { data, error } = await supabase

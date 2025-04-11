@@ -4,9 +4,10 @@ import { supabase } from "@/lib/supabase";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  context: { params: Promise<{ id: string }> },
 ) {
   try {
+    const params = await context.params;
     const postId = params.id;
 
     // 인증 확인
