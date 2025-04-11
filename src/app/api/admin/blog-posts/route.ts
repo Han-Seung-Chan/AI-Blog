@@ -1,6 +1,7 @@
+import { NextRequest, NextResponse } from "next/server";
+
 import { verifyUserRole } from "@/lib/auth-middleware";
 import { supabase } from "@/lib/supabase";
-import { NextRequest, NextResponse } from "next/server";
 
 // 블로그 글 생성
 export async function POST(request: NextRequest) {

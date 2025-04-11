@@ -1,6 +1,6 @@
 "use client";
 
-import { FileEdit,Loader2 } from "lucide-react";
+import { FileEdit, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -26,7 +26,6 @@ export function UserDashboard() {
 
       // 사용 가능한 블로그 글 가져오기
       const availablePosts = await getAvailableBlogPosts();
-
       // 내 작업 목록 가져오기
       const myAssignments = await getMyAssignments();
 

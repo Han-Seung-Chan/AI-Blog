@@ -38,8 +38,7 @@ export function ExcelUploader({
             <div className="flex flex-col items-center justify-center pt-5 pb-6">
               <Upload className="mb-2 h-8 w-8 text-gray-500 dark:text-gray-400" />
               <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                <span className="font-semibold">클릭하여 파일 선택</span> 또는
-                파일을 여기에 드래그 앤 드롭하세요
+                <span className="font-semibold">클릭하여 파일 선택하세요</span>
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Excel 파일 (.xlsx, .xls)

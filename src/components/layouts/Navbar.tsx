@@ -27,12 +27,14 @@ export function Navbar() {
                   관리자 대시보드
                 </Link>
               )}
-              <Link
-                href="/dashboard"
-                className="text-sm font-medium hover:underline"
-              >
-                블로그 글 관리
-              </Link>
+              {!isAdmin && (
+                <Link
+                  href="/dashboard"
+                  className="text-sm font-medium hover:underline"
+                >
+                  블로그 글 관리
+                </Link>
+              )}
               <div className="flex items-center space-x-2">
                 <div className="flex items-center">
                   <User className="mr-1 h-4 w-4" />

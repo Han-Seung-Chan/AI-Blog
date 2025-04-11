@@ -66,10 +66,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 첫 번째 행을 헤더로 타입 안전하게 추출
-    const headers = rawHeaders[0] as unknown as string[];
-
-    // 2. 실제 데이터 행들을 객체 배열로 추출 (헤더 정보를 칼럼명으로 사용)
     const rows = XLSX.utils.sheet_to_json<ExcelRowData>(worksheet, {
       defval: null, // 빈 셀은 null로 설정
       blankrows: false, // 빈 행 무시

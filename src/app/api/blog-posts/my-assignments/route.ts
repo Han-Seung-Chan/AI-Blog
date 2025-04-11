@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { supabase } from "@/lib/supabase";
 import { verifyUserRole } from "@/lib/auth-middleware";
+import { supabase } from "@/lib/supabase";
 
 export async function GET(request: NextRequest) {
   try {
