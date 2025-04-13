@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ExternalLink,Loader2, Pencil } from "lucide-react";
+import { Check, ExternalLink, Loader2, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -105,7 +105,7 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
       case "reserved":
         return "작성 중";
       case "completed":
-        return "완료됨 (검수 대기)";
+        return "검수 중";
       case "approved":
         return "승인됨";
       default:

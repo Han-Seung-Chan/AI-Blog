@@ -22,8 +22,9 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   approveBlogPost,
-  getAllBlogPosts,
+  getMyBlogPosts,
 } from "@/services/admin/admin-service";
+import { formatDate } from "@/lib/date";
 
 export function AdminBlogPostList() {
   const [posts, setPosts] = useState([]);
@@ -36,7 +37,7 @@ export function AdminBlogPostList() {
   const fetchBlogPosts = async () => {
     try {
       setIsLoading(true);
-      const data = await getAllBlogPosts();
+      const data = await getMyBlogPosts();
       setPosts(data);
     } catch (error) {
       console.error("블로그 글 목록 조회 오류:", error);
@@ -55,7 +56,7 @@ export function AdminBlogPostList() {
     try {
       setIsApproving(true);
       await approveBlogPost(selectedPost.id, feedback);
-      await fetchBlogPosts(); // 목록 새로고침
+      await fetchBlogPosts();
       setIsDialogOpen(false);
     } catch (error) {
       console.error("블로그 글 승인 오류:", error);
@@ -96,6 +97,27 @@ export function AdminBlogPostList() {
     }
   };
 
+  // 날짜별로 그룹화하는 함수
+  const groupPostsByDate = () => {
+    const grouped = {};
+
+    posts.forEach((post) => {
+      const dateKey = formatDate(post.created_at);
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = [];
+      }
+      grouped[dateKey].push(post);
+    });
+
+    // 날짜를 최근 순으로 정렬
+    return Object.keys(grouped)
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
+      .map((date) => ({
+        date,
+        posts: grouped[date],
+      }));
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center p-8">
@@ -104,96 +126,103 @@ export function AdminBlogPostList() {
     );
   }
 
+  const groupedPosts = groupPostsByDate();
+
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">블로그 글 목록</h2>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-muted/50">
-                <tr>
-                  <th className="px-4 py-3 text-left">매장명</th>
-                  <th className="px-4 py-3 text-left">키워드</th>
-                  <th className="px-4 py-3 text-left">상태</th>
-                  <th className="px-4 py-3 text-left">담당자</th>
-                  <th className="px-4 py-3 text-left">블로그 링크</th>
-                  <th className="px-4 py-3 text-left">작업</th>
-                </tr>
-              </thead>
-              <tbody>
-                {posts.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-3 text-center">
-                      블로그 글이 없습니다
-                    </td>
-                  </tr>
-                ) : (
-                  posts.map((post) => (
-                    <tr key={post.id} className="border-t">
-                      <td className="px-4 py-3">{post.store_name}</td>
-                      <td className="px-4 py-3">{post.main_keyword}</td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`flex items-center ${getStatusClass(post.status)}`}
-                        >
-                          {post.status === "created" && (
-                            <AlertCircle className="mr-1 h-4 w-4" />
-                          )}
-                          {post.status === "reserved" && (
-                            <User className="mr-1 h-4 w-4" />
-                          )}
-                          {post.status === "completed" && (
-                            <Calendar className="mr-1 h-4 w-4" />
-                          )}
-                          {post.status === "approved" && (
-                            <Check className="mr-1 h-4 w-4" />
-                          )}
-                          {getStatusText(post.status)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        {post.assigned_to
-                          ? post.assigned_user?.name || "할당됨"
-                          : "-"}
-                      </td>
-                      <td className="px-4 py-3">
-                        {post.blog_url ? (
-                          <a
-                            href={post.blog_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary flex items-center hover:underline"
-                          >
-                            링크 <ExternalLink className="ml-1 h-3 w-3" />
-                          </a>
-                        ) : (
-                          "-"
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        {post.status === "completed" && (
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setSelectedPost(post);
-                              setFeedback("");
-                              setIsDialogOpen(true);
-                            }}
-                          >
-                            승인하기
-                          </Button>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+      {groupedPosts.length === 0 ? (
+        <Card>
+          <CardContent className="p-6 text-center">
+            <p>표시할 블로그 글이 없습니다.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        groupedPosts.map((group) => (
+          <div key={group.date} className="space-y-2">
+            <h3 className="text-lg font-medium">{group.date}</h3>
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-muted/50">
+                      <tr>
+                        <th className="px-4 py-3 text-left">매장명</th>
+                        <th className="px-4 py-3 text-left">키워드</th>
+                        <th className="px-4 py-3 text-left">상태</th>
+                        <th className="px-4 py-3 text-left">담당자</th>
+                        <th className="px-4 py-3 text-left">블로그 링크</th>
+                        <th className="px-4 py-3 text-left">작업</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {group.posts.map((post) => (
+                        <tr key={post.id} className="border-t">
+                          <td className="px-4 py-3">{post.store_name}</td>
+                          <td className="px-4 py-3">{post.main_keyword}</td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`flex items-center ${getStatusClass(post.status)}`}
+                            >
+                              {post.status === "created" && (
+                                <AlertCircle className="mr-1 h-4 w-4" />
+                              )}
+                              {post.status === "reserved" && (
+                                <User className="mr-1 h-4 w-4" />
+                              )}
+                              {post.status === "completed" && (
+                                <Calendar className="mr-1 h-4 w-4" />
+                              )}
+                              {post.status === "approved" && (
+                                <Check className="mr-1 h-4 w-4" />
+                              )}
+                              {getStatusText(post.status)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            {post.assigned_to
+                              ? post.assigned_user?.name || "할당됨"
+                              : "-"}
+                          </td>
+                          <td className="px-4 py-3">
+                            {post.blog_url ? (
+                              <a
+                                href={post.blog_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary flex items-center hover:underline"
+                              >
+                                링크 <ExternalLink className="ml-1 h-3 w-3" />
+                              </a>
+                            ) : (
+                              "-"
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            {post.status === "completed" && (
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedPost(post);
+                                  setFeedback("");
+                                  setIsDialogOpen(true);
+                                }}
+                              >
+                                승인하기
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        ))
+      )}
 
       {/* 승인 대화 상자 */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

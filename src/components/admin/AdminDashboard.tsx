@@ -1,13 +1,13 @@
 "use client";
 
-import { Loader2,Plus } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { AdminBlogPostList } from "@/components/admin/AdminBlogPostList";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getAllBlogPosts } from "@/services/admin/admin-service";
+import { getMyBlogPosts } from "@/services/admin/admin-service";
 
 export function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -22,7 +22,7 @@ export function AdminDashboard() {
   useEffect(() => {
     const fetchBlogPosts = async () => {
       try {
-        const posts = await getAllBlogPosts();
+        const posts = await getMyBlogPosts();
 
         // 통계 계산
         const newStats = {

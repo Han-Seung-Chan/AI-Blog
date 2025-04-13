@@ -39,15 +39,28 @@ export async function createBlogPost(data: GenerationData, aiContent: string) {
   }
 }
 
-export async function getAllBlogPosts(status?: string) {
+export async function getAllBlogPosts(status?: string, userId?: string) {
   const {
     data: { session },
   } = await getCurrentSession();
 
   try {
-    const url = status
-      ? `/api/admin/blog-posts?status=${status}`
-      : "/api/admin/blog-posts";
+    let url = "/api/admin/blog-posts";
+    const params = new URLSearchParams();
+
+    if (status) {
+      params.append("status", status);
+    }
+
+    if (userId) {
+      params.append("userId", userId);
+    }
+
+    // 쿼리 파라미터가 있으면 URL에 추가
+    const queryString = params.toString();
+    if (queryString) {
+      url = `${url}?${queryString}`;
+    }
 
     const response = await fetch(url, {
       method: "GET",
@@ -67,6 +80,10 @@ export async function getAllBlogPosts(status?: string) {
     console.error("블로그 글 목록 조회 오류:", error);
     throw error;
   }
+}
+
+export async function getMyBlogPosts(status?: string) {
+  return getAllBlogPosts(status, "me");
 }
 
 export async function approveBlogPost(postId: string, feedback?: string) {

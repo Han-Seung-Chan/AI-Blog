@@ -67,8 +67,9 @@ export async function GET(request: NextRequest) {
     // 쿼리 파라미터 가져오기
     const url = new URL(request.url);
     const status = url.searchParams.get("status");
+    const userId = url.searchParams.get("userId");
 
-    const { errorResponse } = await verifyUserRole(request, "admin");
+    const { user, errorResponse } = await verifyUserRole(request, "admin");
     if (errorResponse) return errorResponse;
 
     // 블로그 글 조회 쿼리 구성
@@ -80,6 +81,12 @@ export async function GET(request: NextRequest) {
     // 특정 상태로 필터링
     if (status) {
       query = query.eq("status", status);
+    }
+
+    if (userId === "me") {
+      query = query.eq("created_by", user.id);
+    } else if (userId) {
+      query = query.eq("created_by", userId);
     }
 
     const { data, error } = await query;
