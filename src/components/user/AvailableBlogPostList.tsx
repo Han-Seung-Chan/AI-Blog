@@ -4,15 +4,10 @@ import { ExternalLink, FileText, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { ReserveBlogModal } from "@/components/dialog/ReserveBlogModal";
+import { ViewResultModal } from "@/components/dialog/ViewResultModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   getAvailableBlogPosts,
   reserveBlogPost,
@@ -23,8 +18,8 @@ export function AvailableBlogPostList() {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isAiContentDialogOpen, setIsAiContentDialogOpen] = useState(false);
+  const [isReserveBlogModal, setIsReserveBlogModal] = useState(false);
+  const [isViewResultModal, setIsViewResultModal] = useState(false);
   const [selectedAiContent, setSelectedAiContent] = useState("");
   const [isReserving, setIsReserving] = useState(false);
   const [error, setError] = useState("");
@@ -48,7 +43,7 @@ export function AvailableBlogPostList() {
 
   const handleViewAiContent = (post) => {
     setSelectedAiContent(post.ai_content || "AI 콘텐츠가 없습니다.");
-    setIsAiContentDialogOpen(true);
+    setIsViewResultModal(true);
   };
 
   const handleReserve = async () => {
@@ -146,7 +141,7 @@ export function AvailableBlogPostList() {
                           onClick={() => {
                             setSelectedPost(post);
                             setError("");
-                            setIsDialogOpen(true);
+                            setIsReserveBlogModal(true);
                           }}
                         >
                           작성 예약
@@ -162,65 +157,22 @@ export function AvailableBlogPostList() {
       </Card>
 
       {/* AI 컨텐츠 대화 상자 */}
-      <Dialog
-        open={isAiContentDialogOpen}
-        onOpenChange={setIsAiContentDialogOpen}
-      >
-        <DialogContent className="w-[90vw] max-w-3xl p-4">
-          <DialogHeader>
-            <DialogTitle>AI 생성 컨텐츠</DialogTitle>
-          </DialogHeader>
-          <div className="max-h-[60vh] overflow-y-auto px-1 py-2">
-            <p className="text-base leading-relaxed break-words whitespace-pre-line">
-              {selectedAiContent}
-            </p>
-          </div>
-          <DialogFooter className="pt-4">
-            <Button onClick={() => setIsAiContentDialogOpen(false)}>
-              닫기
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ViewResultModal
+        isOpen={isViewResultModal}
+        onOpenChange={setIsViewResultModal}
+        title="블로그 컨텐츠"
+        content={selectedAiContent}
+      />
 
       {/* 예약 확인 대화 상자 */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>블로그 글 작성 예약</DialogTitle>
-          </DialogHeader>
-
-          <div className="py-4">
-            <h3 className="mb-2 font-medium">{selectedPost?.store_name}</h3>
-            <p className="text-muted-foreground mb-4 text-sm">
-              키워드: {selectedPost?.main_keyword}
-            </p>
-
-            <p>
-              이 블로그 글 작성을、예약하시겠습니까? 예약 후에는 블로그 글을
-              작성하고 완료 처리해야 합니다.
-            </p>
-
-            {error && <p className="text-destructive mt-2 text-sm">{error}</p>}
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              취소
-            </Button>
-            <Button onClick={handleReserve} disabled={isReserving}>
-              {isReserving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  처리 중...
-                </>
-              ) : (
-                "예약하기"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ReserveBlogModal
+        isOpen={isReserveBlogModal}
+        onOpenChange={setIsReserveBlogModal}
+        selectedPost={selectedPost}
+        onReserve={handleReserve}
+        isReserving={isReserving}
+        error={error}
+      />
     </div>
   );
 }

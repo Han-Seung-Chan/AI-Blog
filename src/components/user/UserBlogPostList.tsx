@@ -3,18 +3,10 @@
 import { Check, ExternalLink, FileText, Loader2, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { CompleteBlogModal } from "@/components/dialog/CompleteBlogModal";
+import { ViewResultModal } from "@/components/dialog/ViewResultModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   completeBlogPost,
   getMyAssignments,
@@ -28,8 +20,8 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isAiContentDialogOpen, setIsAiContentDialogOpen] = useState(false);
+  const [isCompleteBlogModal, setIsCompleteBlogModal] = useState(false);
+  const [isViewResultModal, setIsViewResultModal] = useState(false);
   const [selectedAiContent, setSelectedAiContent] = useState("");
   const [blogUrl, setBlogUrl] = useState("");
   const [notes, setNotes] = useState("");
@@ -78,7 +70,7 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
       await fetchMyAssignments();
       if (onStatusChange) onStatusChange();
 
-      setIsDialogOpen(false);
+      setIsCompleteBlogModal(false);
     } catch (error) {
       console.error("블로그 글 완료 처리 오류:", error);
       setUrlError("완료 처리 중 오류가 발생했습니다.");
@@ -117,7 +109,7 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
 
   const handleViewAiContent = (post) => {
     setSelectedAiContent(post.ai_content || "AI 콘텐츠가 없습니다.");
-    setIsAiContentDialogOpen(true);
+    setIsViewResultModal(true);
   };
 
   if (isLoading) {
@@ -212,7 +204,7 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
                               setBlogUrl("");
                               setNotes("");
                               setUrlError("");
-                              setIsDialogOpen(true);
+                              setIsCompleteBlogModal(true);
                             }}
                           >
                             완료하기
@@ -239,84 +231,21 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
       </Card>
 
       {/* AI 컨텐츠 대화 상자 */}
-      <Dialog
-        open={isAiContentDialogOpen}
-        onOpenChange={setIsAiContentDialogOpen}
-      >
-        <DialogContent className="w-[90vw] max-w-3xl p-4">
-          <DialogHeader>
-            <DialogTitle>AI 생성 컨텐츠</DialogTitle>
-          </DialogHeader>
-          <div className="max-h-[60vh] overflow-y-auto px-1 py-2">
-            <p className="text-base leading-relaxed break-words whitespace-pre-line">
-              {selectedAiContent}
-            </p>
-          </div>
-          <DialogFooter className="pt-4">
-            <Button onClick={() => setIsAiContentDialogOpen(false)}>
-              닫기
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ViewResultModal
+        isOpen={isViewResultModal}
+        onOpenChange={setIsViewResultModal}
+        title="블로그 컨텐츠"
+        content={selectedAiContent}
+      />
 
       {/* 완료 대화 상자 */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>블로그 글 작성 완료</DialogTitle>
-          </DialogHeader>
-
-          <div className="py-4">
-            <h3 className="mb-2 font-medium">{selectedPost?.store_name}</h3>
-            <p className="text-muted-foreground mb-4 text-sm">
-              키워드: {selectedPost?.main_keyword}
-            </p>
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="blogUrl">블로그 URL *</Label>
-                <Input
-                  id="blogUrl"
-                  value={blogUrl}
-                  onChange={(e) => setBlogUrl(e.target.value)}
-                  placeholder="작성한 블로그 글의 URL을 입력하세요"
-                />
-                {urlError && (
-                  <p className="text-destructive text-xs">{urlError}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="notes">메모 (선택사항)</Label>
-                <Textarea
-                  id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="관리자에게 전달할 메모를 입력하세요"
-                  rows={3}
-                />
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              취소
-            </Button>
-            <Button onClick={handleComplete} disabled={isCompleting}>
-              {isCompleting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  처리 중...
-                </>
-              ) : (
-                "작성 완료"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CompleteBlogModal
+        isOpen={isCompleteBlogModal}
+        onOpenChange={setIsCompleteBlogModal}
+        selectedPost={selectedPost}
+        onComplete={handleComplete}
+        isCompleting={isCompleting}
+      />
     </div>
   );
 }

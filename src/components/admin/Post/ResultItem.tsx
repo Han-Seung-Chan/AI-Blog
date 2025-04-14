@@ -1,14 +1,8 @@
-import { AlertCircle,Check, Loader2, XCircle } from "lucide-react";
+import { AlertCircle, Check, Loader2, XCircle } from "lucide-react";
 import { useState } from "react";
 
+import { ViewResultModal } from "@/components/dialog/ViewResultModal";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { ProcessResult } from "@/types/workflow";
 
 interface ResultItemProps {
@@ -24,7 +18,7 @@ export function ResultItem({
   currentIndex,
   onSelectChange,
 }: ResultItemProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isViewResultModalOpen, setIsViewResultModalOpen] = useState(false);
 
   // 체크박스 변경 핸들러
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,27 +75,20 @@ export function ResultItem({
       <td className="px-4 py-3">
         {result.status === "completed" && (
           <>
-            <Button variant="outline" size="sm" onClick={() => setIsOpen(true)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsViewResultModalOpen(true)}
+            >
               결과 보기
             </Button>
 
-            <Dialog open={isOpen} onOpenChange={setIsOpen}>
-              <DialogContent className="w-[90vw] max-w-3xl p-4">
-                <DialogHeader className="pb-2">
-                  <DialogTitle>
-                    {result.storeName || `데이터 #${index + 1}`} 블로그 글
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="max-h-[60vh] overflow-y-auto px-1 py-2">
-                  <p className="text-base leading-relaxed break-words whitespace-pre-line">
-                    {result.result}
-                  </p>
-                </div>
-                <DialogFooter className="pt-4">
-                  <Button onClick={() => setIsOpen(false)}>닫기</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <ViewResultModal
+              isOpen={isViewResultModalOpen}
+              onOpenChange={setIsViewResultModalOpen}
+              title={result.storeName || `데이터 #${index + 1}`}
+              content={result.result || ""}
+            />
           </>
         )}
         {result.status === "failed" && (

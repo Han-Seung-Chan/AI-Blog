@@ -8,36 +8,29 @@ import {
   FileText,
   Image as ImageIcon,
   Loader2,
-  Plus,
-  Trash2,
   User,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { ApproveBlogModal } from "@/components/dialog/ApproveBlogModal";
+import { ManageImagesModal } from "@/components/dialog/ManageImagesModal";
+import { ViewResultModal } from "@/components/dialog/ViewResultModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
+import { formatDate } from "@/lib/date";
 import {
   approveBlogPost,
+  deleteBlogPostImage,
   getMyBlogPosts,
   uploadBlogPostImages,
-  deleteBlogPostImage,
 } from "@/services/admin/admin-service";
-import { formatDate } from "@/lib/date";
 
 export function AdminBlogPostList() {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isAiContentDialogOpen, setIsAiContentDialogOpen] = useState(false);
+  const [isApproveBlogModal, setIsApproveBlogModal] = useState(false);
+  const [isViewResultModal, setIsViewResultModal] = useState(false);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const [selectedAiContent, setSelectedAiContent] = useState("");
   const [feedback, setFeedback] = useState("");
@@ -70,7 +63,7 @@ export function AdminBlogPostList() {
       setIsApproving(true);
       await approveBlogPost(selectedPost.id, feedback);
       await fetchBlogPosts();
-      setIsDialogOpen(false);
+      setIsApproveBlogModal(false);
     } catch (error) {
       console.error("블로그 글 승인 오류:", error);
     } finally {
@@ -80,7 +73,7 @@ export function AdminBlogPostList() {
 
   const handleViewAiContent = (post) => {
     setSelectedAiContent(post.ai_content || "AI 콘텐츠가 없습니다.");
-    setIsAiContentDialogOpen(true);
+    setIsViewResultModal(true);
   };
 
   const handleImageManagement = (post) => {
@@ -330,7 +323,7 @@ export function AdminBlogPostList() {
                                 onClick={() => {
                                   setSelectedPost(post);
                                   setFeedback("");
-                                  setIsDialogOpen(true);
+                                  setIsApproveBlogModal(true);
                                 }}
                                 // 이미지가 없는 경우 승인 버튼 비활성화
                                 disabled={
@@ -364,170 +357,33 @@ export function AdminBlogPostList() {
       )}
 
       {/* 승인 대화 상자 */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>블로그 글 승인</DialogTitle>
-          </DialogHeader>
-
-          <div className="py-4">
-            <h3 className="mb-2 font-medium">{selectedPost?.store_name}</h3>
-            <p className="text-muted-foreground mb-4 text-sm">
-              작성자: {selectedPost?.assigned_user?.name || "알 수 없음"}
-            </p>
-
-            {selectedPost?.blog_url && (
-              <div className="mb-4">
-                <a
-                  href={selectedPost.blog_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary flex items-center hover:underline"
-                >
-                  블로그 글 확인하기 <ExternalLink className="ml-1 h-4 w-4" />
-                </a>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">피드백 (선택사항)</label>
-              <Textarea
-                value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
-                placeholder="작성자에게 전달할 피드백을 입력하세요"
-                rows={4}
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              취소
-            </Button>
-            <Button onClick={handleApprove} disabled={isApproving}>
-              {isApproving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  처리 중...
-                </>
-              ) : (
-                "승인 완료"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ApproveBlogModal
+        isOpen={isApproveBlogModal}
+        onOpenChange={setIsApproveBlogModal}
+        selectedPost={selectedPost}
+        onApprove={handleApprove}
+        isApproving={isApproving}
+      />
 
       {/* AI 컨텐츠 대화 상자 */}
-      <Dialog
-        open={isAiContentDialogOpen}
-        onOpenChange={setIsAiContentDialogOpen}
-      >
-        <DialogContent className="w-[90vw] max-w-3xl p-4">
-          <DialogHeader>
-            <DialogTitle>AI 생성 컨텐츠</DialogTitle>
-          </DialogHeader>
-          <div className="max-h-[60vh] overflow-y-auto px-1 py-2">
-            <p className="text-base leading-relaxed break-words whitespace-pre-line">
-              {selectedAiContent}
-            </p>
-          </div>
-          <DialogFooter className="pt-4">
-            <Button onClick={() => setIsAiContentDialogOpen(false)}>
-              닫기
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ViewResultModal
+        isOpen={isViewResultModal}
+        onOpenChange={setIsViewResultModal}
+        title="블로그 컨텐츠"
+        content={selectedAiContent}
+      />
 
       {/* 이미지 관리 대화 상자 */}
-      <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
-        <DialogContent className="w-[90vw] max-w-3xl p-4">
-          <DialogHeader>
-            <DialogTitle>이미지 관리</DialogTitle>
-          </DialogHeader>
-
-          <div className="py-4">
-            <h3 className="mb-2 font-medium">{selectedPost?.store_name}</h3>
-            <p className="text-muted-foreground mb-4 text-sm">
-              등록된 이미지: {postImages.length}/5
-            </p>
-
-            {/* 이미지 업로드 영역 */}
-            <div className="mb-6">
-              <input
-                type="file"
-                ref={fileInputRef}
-                accept="image/*"
-                multiple
-                onChange={handleFileSelect}
-                className="hidden"
-                disabled={isUploadingImage || postImages.length >= 5}
-              />
-              <Button
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploadingImage || postImages.length >= 5}
-                className="flex h-20 w-full flex-col items-center justify-center border-dashed"
-              >
-                {isUploadingImage ? (
-                  <>
-                    <Loader2 className="mb-2 h-6 w-6 animate-spin" />
-                    <span>업로드 중...</span>
-                  </>
-                ) : (
-                  <>
-                    <Plus className="mb-2 h-6 w-6" />
-                    <span>
-                      이미지 추가하기 {postImages.length >= 5 && "(최대 5개)"}
-                    </span>
-                  </>
-                )}
-              </Button>
-
-              {imageError && (
-                <p className="mt-2 text-sm text-red-500">{imageError}</p>
-              )}
-            </div>
-
-            {/* 이미지 목록 */}
-            {postImages.length > 0 ? (
-              <div className="grid grid-cols-2 gap-4">
-                {postImages.map((image) => (
-                  <div
-                    key={image.id}
-                    className="group relative overflow-hidden rounded-md border"
-                  >
-                    <img
-                      src={image.url}
-                      alt="블로그 이미지"
-                      className="h-40 w-full object-cover"
-                    />
-                    <div className="absolute top-2 right-2">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="size-8 p-0 opacity-0 transition-opacity group-hover:opacity-100"
-                        onClick={() => handleDeleteImage(image.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-muted-foreground py-8 text-center">
-                등록된 이미지가 없습니다
-              </div>
-            )}
-          </div>
-
-          <DialogFooter className="pt-4">
-            <Button onClick={() => setIsImageDialogOpen(false)}>닫기</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ManageImagesModal
+        isOpen={isImageDialogOpen}
+        onOpenChange={setIsImageDialogOpen}
+        selectedPost={selectedPost}
+        postImages={postImages}
+        isUploadingImage={isUploadingImage}
+        imageError={imageError}
+        onFileSelect={handleFileSelect}
+        onDeleteImage={handleDeleteImage}
+      />
     </div>
   );
 }
