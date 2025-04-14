@@ -5,10 +5,14 @@ import {
   Calendar,
   Check,
   ExternalLink,
+  FileText,
+  Image as ImageIcon,
   Loader2,
+  Plus,
+  Trash2,
   User,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,6 +27,8 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   approveBlogPost,
   getMyBlogPosts,
+  uploadBlogPostImages,
+  deleteBlogPostImage,
 } from "@/services/admin/admin-service";
 import { formatDate } from "@/lib/date";
 
@@ -31,8 +37,15 @@ export function AdminBlogPostList() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAiContentDialogOpen, setIsAiContentDialogOpen] = useState(false);
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [selectedAiContent, setSelectedAiContent] = useState("");
   const [feedback, setFeedback] = useState("");
   const [isApproving, setIsApproving] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [postImages, setPostImages] = useState([]);
+  const [imageError, setImageError] = useState("");
+  const fileInputRef = useRef(null);
 
   const fetchBlogPosts = async () => {
     try {
@@ -62,6 +75,85 @@ export function AdminBlogPostList() {
       console.error("블로그 글 승인 오류:", error);
     } finally {
       setIsApproving(false);
+    }
+  };
+
+  const handleViewAiContent = (post) => {
+    setSelectedAiContent(post.ai_content || "AI 콘텐츠가 없습니다.");
+    setIsAiContentDialogOpen(true);
+  };
+
+  const handleImageManagement = (post) => {
+    setSelectedPost(post);
+    // 게시물에 연결된 이미지 목록 가져오기
+    setPostImages(post.images || []);
+    setImageError("");
+    setIsImageDialogOpen(true);
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    // 파일 유효성 검사
+    const invalidFiles = files.filter(
+      (file) => !file.type.startsWith("image/"),
+    );
+    if (invalidFiles.length > 0) {
+      setImageError("이미지 파일만 업로드 가능합니다.");
+      return;
+    }
+
+    // 최대 5개 이미지 제한 확인
+    const totalImages = postImages.length + files.length;
+    if (totalImages > 5) {
+      setImageError("이미지는 최대 5개까지만 등록 가능합니다.");
+      return;
+    }
+
+    setIsUploadingImage(true);
+    setImageError("");
+
+    try {
+      // 파일 업로드 처리
+      const formData = new FormData();
+      files.forEach((file) => {
+        formData.append("images", file);
+      });
+
+      const uploadedImages = await uploadBlogPostImages(
+        selectedPost.id,
+        formData,
+      );
+
+      // 업로드 성공 시 이미지 목록 업데이트
+      setPostImages((prev) => [...prev, ...uploadedImages]);
+
+      // 블로그 글 목록 다시 가져오기
+      await fetchBlogPosts();
+    } catch (error) {
+      console.error("이미지 업로드 오류:", error);
+      setImageError("이미지 업로드 중 오류가 발생했습니다.");
+    } finally {
+      setIsUploadingImage(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = null; // 파일 입력 초기화
+      }
+    }
+  };
+
+  const handleDeleteImage = async (imageId) => {
+    try {
+      await deleteBlogPostImage(selectedPost.id, imageId);
+
+      // 이미지 목록에서 삭제된 이미지 제거
+      setPostImages((prev) => prev.filter((img) => img.id !== imageId));
+
+      // 블로그 글 목록 다시 가져오기
+      await fetchBlogPosts();
+    } catch (error) {
+      console.error("이미지 삭제 오류:", error);
+      setImageError("이미지 삭제 중 오류가 발생했습니다.");
     }
   };
 
@@ -150,9 +242,12 @@ export function AdminBlogPostList() {
                       <tr>
                         <th className="px-4 py-3 text-left">매장명</th>
                         <th className="px-4 py-3 text-left">키워드</th>
+                        <th className="px-4 py-3 text-left">AI 컨텐츠</th>
+                        <th className="px-4 py-3 text-left">이미지 등록</th>
                         <th className="px-4 py-3 text-left">상태</th>
                         <th className="px-4 py-3 text-left">담당자</th>
                         <th className="px-4 py-3 text-left">블로그 링크</th>
+
                         <th className="px-4 py-3 text-left">작업</th>
                       </tr>
                     </thead>
@@ -161,6 +256,34 @@ export function AdminBlogPostList() {
                         <tr key={post.id} className="border-t">
                           <td className="px-4 py-3">{post.store_name}</td>
                           <td className="px-4 py-3">{post.main_keyword}</td>
+                          <td className="px-4 py-3">
+                            {post.ai_content ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewAiContent(post)}
+                                className="flex items-center"
+                              >
+                                <FileText className="mr-1 h-4 w-4" />
+                                보기
+                              </Button>
+                            ) : (
+                              "-"
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleImageManagement(post)}
+                              className="flex items-center"
+                            >
+                              <ImageIcon className="mr-1 h-4 w-4" />
+                              {post.images && post.images.length > 0
+                                ? `관리 (${post.images.length}/5)`
+                                : "등록"}
+                            </Button>
+                          </td>
                           <td className="px-4 py-3">
                             <span
                               className={`flex items-center ${getStatusClass(post.status)}`}
@@ -199,6 +322,7 @@ export function AdminBlogPostList() {
                               "-"
                             )}
                           </td>
+
                           <td className="px-4 py-3">
                             {post.status === "completed" && (
                               <Button
@@ -208,10 +332,25 @@ export function AdminBlogPostList() {
                                   setFeedback("");
                                   setIsDialogOpen(true);
                                 }}
+                                // 이미지가 없는 경우 승인 버튼 비활성화
+                                disabled={
+                                  !post.images || post.images.length === 0
+                                }
+                                title={
+                                  !post.images || post.images.length === 0
+                                    ? "이미지가 등록되어야 승인할 수 있습니다"
+                                    : ""
+                                }
                               >
                                 승인하기
                               </Button>
                             )}
+                            {post.status === "completed" &&
+                              (!post.images || post.images.length === 0) && (
+                                <div className="mt-1 text-xs text-red-500">
+                                  이미지 필요
+                                </div>
+                              )}
                           </td>
                         </tr>
                       ))}
@@ -275,6 +414,117 @@ export function AdminBlogPostList() {
                 "승인 완료"
               )}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI 컨텐츠 대화 상자 */}
+      <Dialog
+        open={isAiContentDialogOpen}
+        onOpenChange={setIsAiContentDialogOpen}
+      >
+        <DialogContent className="w-[90vw] max-w-3xl p-4">
+          <DialogHeader>
+            <DialogTitle>AI 생성 컨텐츠</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto px-1 py-2">
+            <p className="text-base leading-relaxed break-words whitespace-pre-line">
+              {selectedAiContent}
+            </p>
+          </div>
+          <DialogFooter className="pt-4">
+            <Button onClick={() => setIsAiContentDialogOpen(false)}>
+              닫기
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 이미지 관리 대화 상자 */}
+      <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
+        <DialogContent className="w-[90vw] max-w-3xl p-4">
+          <DialogHeader>
+            <DialogTitle>이미지 관리</DialogTitle>
+          </DialogHeader>
+
+          <div className="py-4">
+            <h3 className="mb-2 font-medium">{selectedPost?.store_name}</h3>
+            <p className="text-muted-foreground mb-4 text-sm">
+              등록된 이미지: {postImages.length}/5
+            </p>
+
+            {/* 이미지 업로드 영역 */}
+            <div className="mb-6">
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                multiple
+                onChange={handleFileSelect}
+                className="hidden"
+                disabled={isUploadingImage || postImages.length >= 5}
+              />
+              <Button
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadingImage || postImages.length >= 5}
+                className="flex h-20 w-full flex-col items-center justify-center border-dashed"
+              >
+                {isUploadingImage ? (
+                  <>
+                    <Loader2 className="mb-2 h-6 w-6 animate-spin" />
+                    <span>업로드 중...</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="mb-2 h-6 w-6" />
+                    <span>
+                      이미지 추가하기 {postImages.length >= 5 && "(최대 5개)"}
+                    </span>
+                  </>
+                )}
+              </Button>
+
+              {imageError && (
+                <p className="mt-2 text-sm text-red-500">{imageError}</p>
+              )}
+            </div>
+
+            {/* 이미지 목록 */}
+            {postImages.length > 0 ? (
+              <div className="grid grid-cols-2 gap-4">
+                {postImages.map((image) => (
+                  <div
+                    key={image.id}
+                    className="group relative overflow-hidden rounded-md border"
+                  >
+                    <img
+                      src={image.url}
+                      alt="블로그 이미지"
+                      className="h-40 w-full object-cover"
+                    />
+                    <div className="absolute top-2 right-2">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="size-8 p-0 opacity-0 transition-opacity group-hover:opacity-100"
+                        onClick={() => handleDeleteImage(image.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-muted-foreground py-8 text-center">
+                등록된 이미지가 없습니다
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="pt-4">
+            <Button onClick={() => setIsImageDialogOpen(false)}>닫기</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

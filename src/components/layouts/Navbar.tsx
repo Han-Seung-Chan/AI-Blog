@@ -11,7 +11,7 @@ export function Navbar() {
 
   return (
     <div className="bg-background border-b">
-      <div className="container mx-auto px-4 py-3">
+      <div className="w-full px-4 py-3">
         <div className="flex items-center justify-between">
           <Link href="/" className="text-xl font-bold">
             AI 블로그 관리

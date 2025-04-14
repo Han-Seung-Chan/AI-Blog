@@ -136,3 +136,62 @@ export async function getAdminDashboardStats() {
     throw error;
   }
 }
+
+// 이미지 업로드 함수
+export async function uploadBlogPostImages(postId: string, formData: FormData) {
+  const {
+    data: { session },
+  } = await getCurrentSession();
+
+  try {
+    const response = await fetch(`/api/admin/blog-posts/${postId}/images`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: formData, // FormData는 Content-Type을 자동으로 설정
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "이미지 업로드에 실패했습니다.");
+    }
+
+    const result = await response.json();
+    return result.data; // 업로드된 이미지 정보 배열 반환
+  } catch (error) {
+    console.error("이미지 업로드 오류:", error);
+    throw error;
+  }
+}
+
+// 이미지 삭제 함수
+export async function deleteBlogPostImage(postId: string, imageId: string) {
+  const {
+    data: { session },
+  } = await getCurrentSession();
+
+  try {
+    const response = await fetch(
+      `/api/admin/blog-posts/${postId}/images/${imageId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "이미지 삭제에 실패했습니다.");
+    }
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error("이미지 삭제 오류:", error);
+    throw error;
+  }
+}

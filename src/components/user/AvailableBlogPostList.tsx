@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink,Loader2 } from "lucide-react";
+import { ExternalLink, FileText, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -24,6 +24,8 @@ export function AvailableBlogPostList() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAiContentDialogOpen, setIsAiContentDialogOpen] = useState(false);
+  const [selectedAiContent, setSelectedAiContent] = useState("");
   const [isReserving, setIsReserving] = useState(false);
   const [error, setError] = useState("");
 
@@ -43,6 +45,11 @@ export function AvailableBlogPostList() {
   useEffect(() => {
     fetchAvailablePosts();
   }, []);
+
+  const handleViewAiContent = (post) => {
+    setSelectedAiContent(post.ai_content || "AI 콘텐츠가 없습니다.");
+    setIsAiContentDialogOpen(true);
+  };
 
   const handleReserve = async () => {
     if (!selectedPost) return;
@@ -87,7 +94,7 @@ export function AvailableBlogPostList() {
                 <tr>
                   <th className="px-4 py-3 text-left">매장명</th>
                   <th className="px-4 py-3 text-left">키워드</th>
-                  <th className="px-4 py-3 text-left">서브 키워드</th>
+                  <th className="px-4 py-3 text-left">블로그 글</th>
                   <th className="px-4 py-3 text-left">매장 링크</th>
                   <th className="px-4 py-3 text-left">작업</th>
                 </tr>
@@ -105,13 +112,19 @@ export function AvailableBlogPostList() {
                       <td className="px-4 py-3">{post.store_name}</td>
                       <td className="px-4 py-3">{post.main_keyword}</td>
                       <td className="px-4 py-3">
-                        {[
-                          post.sub_keyword1,
-                          post.sub_keyword2,
-                          post.sub_keyword3,
-                        ]
-                          .filter(Boolean)
-                          .join(", ") || "-"}
+                        {post.ai_content ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewAiContent(post)}
+                            className="flex items-center"
+                          >
+                            <FileText className="mr-1 h-4 w-4" />
+                            보기
+                          </Button>
+                        ) : (
+                          "-"
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         {post.store_url ? (
@@ -147,6 +160,28 @@ export function AvailableBlogPostList() {
           </div>
         </CardContent>
       </Card>
+
+      {/* AI 컨텐츠 대화 상자 */}
+      <Dialog
+        open={isAiContentDialogOpen}
+        onOpenChange={setIsAiContentDialogOpen}
+      >
+        <DialogContent className="w-[90vw] max-w-3xl p-4">
+          <DialogHeader>
+            <DialogTitle>AI 생성 컨텐츠</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto px-1 py-2">
+            <p className="text-base leading-relaxed break-words whitespace-pre-line">
+              {selectedAiContent}
+            </p>
+          </div>
+          <DialogFooter className="pt-4">
+            <Button onClick={() => setIsAiContentDialogOpen(false)}>
+              닫기
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* 예약 확인 대화 상자 */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
