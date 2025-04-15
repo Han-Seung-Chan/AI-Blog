@@ -1,6 +1,14 @@
 import { Loader2 } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { BlogPost, BlogTableColumn } from "@/types/blog";
 
 interface BlogPostTableProps {
@@ -27,47 +35,39 @@ export function BlogPostTable({
   }
 
   return (
-    <Card>
+    <Card className="p-0">
       <CardContent className="p-0">
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className={headerClassName}>
-              <tr>
+          <Table>
+            <TableHeader className={headerClassName}>
+              <TableRow>
                 {columns.map((column) => (
-                  <th key={column.key} className="px-4 py-3 text-left">
-                    {column.title}
-                  </th>
+                  <TableHead key={column.key}>{column.title}</TableHead>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {posts.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={columns.length}
-                    className="px-4 py-3 text-center"
-                  >
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="text-center">
                     {emptyMessage}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 posts.map((post) => (
-                  <tr key={post.id} className="border-t">
+                  <TableRow key={post.id}>
                     {columns.map((column) => (
-                      <td
-                        key={`${post.id}-${column.key}`}
-                        className="px-4 py-3"
-                      >
+                      <TableCell key={`${post.id}-${column.key}`}>
                         {column.render
                           ? column.render(post)
                           : post[column.key] || "-"}
-                      </td>
+                      </TableCell>
                     ))}
-                  </tr>
+                  </TableRow>
                 ))
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </CardContent>
     </Card>

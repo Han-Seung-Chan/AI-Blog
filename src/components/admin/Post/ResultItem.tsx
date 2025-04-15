@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { ViewResultModal } from "@/components/dialog/ViewResultModal";
 import { Button } from "@/components/ui/button";
+import { TableCell, TableRow } from "@/components/ui/table";
 import { ProcessResult } from "@/types/workflow";
 
 interface ResultItemProps {
@@ -28,12 +29,12 @@ export function ResultItem({
   };
 
   return (
-    <tr
+    <TableRow
       className={`hover:bg-muted/20 border-b ${
         currentIndex === index ? "bg-blue-50 dark:bg-blue-900/10" : ""
       }`}
     >
-      <td className="px-3 py-3">
+      <TableCell className="px-3 py-3">
         {result.status === "completed" && (
           <input
             type="checkbox"
@@ -42,11 +43,11 @@ export function ResultItem({
             className="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
           />
         )}
-      </td>
-      <td className="max-w-[200px] truncate px-4 py-3">
+      </TableCell>
+      <TableCell className="max-w-[200px] truncate px-4 py-3">
         {result.storeName || `데이터 #${index + 1}`}
-      </td>
-      <td className="px-4 py-3">
+      </TableCell>
+      <TableCell className="px-4 py-3">
         {result.status === "waiting" && (
           <span className="flex items-center text-gray-500">
             <AlertCircle className="mr-1 h-4 w-4" />
@@ -71,8 +72,8 @@ export function ResultItem({
             실패
           </span>
         )}
-      </td>
-      <td className="px-4 py-3">
+      </TableCell>
+      <TableCell className="px-4 py-3">
         {result.status === "completed" && (
           <>
             <Button
@@ -94,7 +95,7 @@ export function ResultItem({
         {result.status === "failed" && (
           <span className="text-xs text-red-500">{result.error}</span>
         )}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }

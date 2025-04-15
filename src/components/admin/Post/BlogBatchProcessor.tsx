@@ -1,10 +1,17 @@
 "use client";
 
-import { Download,RefreshCcw } from "lucide-react";
+import { Download, RefreshCcw } from "lucide-react";
 
 import { ResultItem } from "@/components/admin/Post/ResultItem";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useBlogContentGenerator } from "@/hooks/useBlogContentGenerator";
 import { ExcelRowData } from "@/types/excel";
 
@@ -36,10 +43,10 @@ export function BlogBatchProcessor({ data, onReset }: BlogBatchProcessorProps) {
       </CardHeader>
       <CardContent className="p-0">
         <div className="max-h-[600px] overflow-y-auto">
-          <table className="w-full">
-            <thead className="bg-muted sticky top-0">
-              <tr>
-                <th className="px-3 py-2 text-left">
+          <Table>
+            <TableHeader className="bg-muted sticky top-0">
+              <TableRow>
+                <TableHead className="px-3 py-2 text-left">
                   {hasCompletedItems && (
                     <div className="flex items-center">
                       <input
@@ -51,13 +58,13 @@ export function BlogBatchProcessor({ data, onReset }: BlogBatchProcessorProps) {
                       <span className="ml-2 text-xs">전체</span>
                     </div>
                   )}
-                </th>
-                <th className="px-4 py-2 text-left">매장명</th>
-                <th className="px-4 py-2 text-left">상태</th>
-                <th className="px-4 py-2 text-left">작업</th>
-              </tr>
-            </thead>
-            <tbody>
+                </TableHead>
+                <TableHead className="px-4 py-2 text-left">매장명</TableHead>
+                <TableHead className="px-4 py-2 text-left">상태</TableHead>
+                <TableHead className="px-4 py-2 text-left">작업</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {results.map((result, index) => (
                 <ResultItem
                   key={index}
@@ -67,8 +74,8 @@ export function BlogBatchProcessor({ data, onReset }: BlogBatchProcessorProps) {
                   onSelectChange={handleSelectChange}
                 />
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
 
         <div className="bg-muted/20 flex justify-between border-t p-4">
