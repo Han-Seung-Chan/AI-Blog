@@ -11,14 +11,37 @@ import { Button } from "@/components/ui/button";
 import { useAvailableBlogPosts } from "@/hooks/useAvailableBlogPosts";
 import { reserveBlogPost } from "@/services/blog/blog-service";
 import { BlogPost, BlogTableColumn } from "@/types/blog";
+import { getBlogPostImages } from "@/services/admin/admin-service";
+import { BookImage } from "lucide-react";
 
 export function AvailableBlogPostList() {
   const router = useRouter();
   const { posts, isLoading, error } = useAvailableBlogPosts();
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [isReserveBlogModal, setIsReserveBlogModal] = useState(false);
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const [isReserving, setIsReserving] = useState(false);
+  const [postImages, setPostImages] = useState([]);
+  const [imageError, setImageError] = useState("");
   const [reserveError, setReserveError] = useState("");
+
+  const handleImageManagement = async (post: BlogPost) => {
+    setSelectedPost(post);
+    setImageError("");
+
+    try {
+      const images = await getBlogPostImages(post.id);
+      console.log(images);
+
+      setPostImages(images);
+    } catch (error) {
+      console.error("이미지 목록 조회 오류:", error);
+      setImageError("이미지를 불러오는 중 오류가 발생했습니다.");
+      setPostImages([]);
+    } finally {
+      setIsImageDialogOpen(true);
+    }
+  };
 
   const handleReserve = async () => {
     if (!selectedPost) return;
@@ -47,6 +70,21 @@ export function AvailableBlogPostList() {
           content={post.ai_content || ""}
           title="블로그 컨텐츠"
         />
+      ),
+    },
+    {
+      key: "images",
+      title: "이미지 등록",
+      render: (post) => (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleImageManagement(post)}
+          className="flex items-center"
+        >
+          <BookImage className="mr-1 h-4 w-4" />
+          보기
+        </Button>
       ),
     },
     {

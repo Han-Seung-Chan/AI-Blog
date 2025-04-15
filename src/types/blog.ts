@@ -11,17 +11,10 @@ export interface BlogPost {
     name: string;
     email: string;
   };
-  images?: BlogImage[];
+  has_images?: boolean;
   rejection_reason?: string;
   created_at: string;
   [key: string]: any;
-}
-
-export interface BlogImage {
-  id: string;
-  url: string;
-  file_name?: string;
-  file_path?: string;
 }
 
 export interface BlogTableColumn {

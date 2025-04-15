@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { BookImage, Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { BlogLink } from "@/components/common/BlogLink";
@@ -13,10 +13,11 @@ import { RejectBlogModal } from "@/components/dialog/RejectBlogModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAdminBlogPosts } from "@/hooks/useAdminBlogPosts";
-import { formatDate } from "@/lib/date";
+import { groupPostsByDate } from "@/lib/date";
 import {
   approveBlogPost,
   deleteBlogPostImage,
+  getBlogPostImages,
   rejectBlogPost,
   uploadBlogPostImages,
 } from "@/services/admin/admin-service";
@@ -65,11 +66,24 @@ export function AdminBlogPostList() {
     }
   };
 
-  const handleImageManagement = (post: BlogPost) => {
+  const handleImageManagement = async (post: BlogPost) => {
     setSelectedPost(post);
-    setPostImages(post.images || []);
     setImageError("");
-    setIsImageDialogOpen(true);
+    setIsUploadingImage(true);
+
+    try {
+      const images = await getBlogPostImages(post.id);
+      console.log(images);
+
+      setPostImages(images);
+    } catch (error) {
+      console.error("이미지 목록 조회 오류:", error);
+      setImageError("이미지를 불러오는 중 오류가 발생했습니다.");
+      setPostImages([]);
+    } finally {
+      setIsUploadingImage(false);
+      setIsImageDialogOpen(true);
+    }
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,10 +122,10 @@ export function AdminBlogPostList() {
       );
 
       // 업로드 성공 시 이미지 목록 업데이트
-      setPostImages((prev) => [...prev, ...uploadedImages]);
+      setPostImages((prev) => [...uploadedImages, ...prev]);
 
       // 블로그 글 목록 다시 가져오기
-      await refreshPosts();
+      // await refreshPosts();
     } catch (error) {
       console.error("이미지 업로드 오류:", error);
       setImageError("이미지 업로드 중 오류가 발생했습니다.");
@@ -132,26 +146,6 @@ export function AdminBlogPostList() {
       console.error("이미지 삭제 오류:", error);
       setImageError("이미지 삭제 중 오류가 발생했습니다.");
     }
-  };
-
-  // 날짜별로 그룹화하는 함수
-  const groupPostsByDate = () => {
-    const grouped = {};
-
-    posts.forEach((post) => {
-      const dateKey = formatDate(post.created_at);
-      if (!grouped[dateKey]) {
-        grouped[dateKey] = [];
-      }
-      grouped[dateKey].push(post);
-    });
-
-    return Object.keys(grouped)
-      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
-      .map((date) => ({
-        date,
-        posts: grouped[date],
-      }));
   };
 
   const columns: BlogTableColumn[] = [
@@ -177,21 +171,8 @@ export function AdminBlogPostList() {
           onClick={() => handleImageManagement(post)}
           className="flex items-center"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            className="mr-1 h-4 w-4"
-          >
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <circle cx="8.5" cy="8.5" r="1.5" />
-            <path d="M21 15l-5-5L5 21" />
-          </svg>
-          {post.images && post.images.length > 0
-            ? `관리 (${post.images.length}/5)`
-            : "등록"}
+          <BookImage className="mr-1 h-4 w-4" />
+          {post.has_images ? "관리" : "등록"}
         </Button>
       ),
     },
@@ -253,7 +234,7 @@ export function AdminBlogPostList() {
     },
   ];
 
-  const groupedPosts = groupPostsByDate();
+  const groupedPosts = groupPostsByDate(posts);
 
   return (
     <div className="space-y-4">

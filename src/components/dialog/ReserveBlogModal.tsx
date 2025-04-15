@@ -14,7 +14,7 @@ import {
 interface ReserveBlogModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedPost: any; // 타입을 더 구체적으로 정의할 수 있습니다
+  selectedPost: any;
   onReserve: () => Promise<void>;
   isReserving: boolean;
   error?: string;

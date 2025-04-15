@@ -94,7 +94,7 @@ export async function POST(
       const fileData = new Uint8Array(fileBuffer);
 
       // Supabase Storage에 이미지 업로드
-      const fileName = `${uuid()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+      const fileName = `${uuid()}`;
       const filePath = `blog_images/${postId}/${fileName}`;
 
       const { data: uploadData, error: uploadError } = await supabase.storage

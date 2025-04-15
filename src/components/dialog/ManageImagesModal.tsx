@@ -15,13 +15,12 @@ import {
 interface PostImage {
   id: string;
   url: string;
-  // 필요한 다른 이미지 속성 추가 가능
 }
 
 interface ManageImagesModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedPost: any; // 타입을 더 구체적으로 정의할 수 있습니다
+  selectedPost: any;
   postImages: PostImage[];
   isUploadingImage: boolean;
   imageError: string;
@@ -96,7 +95,7 @@ export function ManageImagesModal({
             <div className="grid grid-cols-2 gap-4">
               {postImages.map((image) => (
                 <div
-                  key={image.id}
+                  key={encodeURI(image.id)}
                   className="group relative overflow-hidden rounded-md border"
                 >
                   <img

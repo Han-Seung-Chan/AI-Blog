@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 interface ApproveBlogModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedPost: any; // 타입을 더 구체적으로 정의할 수 있습니다
+  selectedPost: any;
   onApprove: (feedback: string) => Promise<void>;
   isApproving: boolean;
 }

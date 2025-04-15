@@ -149,7 +149,7 @@ export async function uploadBlogPostImages(postId: string, formData: FormData) {
       headers: {
         Authorization: `Bearer ${session.access_token}`,
       },
-      body: formData, // FormData는 Content-Type을 자동으로 설정
+      body: formData,
     });
 
     if (!response.ok) {
@@ -222,6 +222,36 @@ export async function rejectBlogPost(postId: string, rejectionReason: string) {
     return result.data;
   } catch (error) {
     console.error("블로그 글 거절 오류:", error);
+    throw error;
+  }
+}
+
+// 블로그 포스트의 이미지 목록 조회 함수
+export async function getBlogPostImages(postId: string) {
+  const {
+    data: { session },
+  } = await getCurrentSession();
+
+  try {
+    const response = await fetch(`/api/admin/blog-posts/${postId}/images`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.error || "이미지 목록을 가져오는데 실패했습니다.",
+      );
+    }
+
+    const result = await response.json();
+    return result.data || [];
+  } catch (error) {
+    console.error("이미지 목록 조회 오류:", error);
     throw error;
   }
 }
