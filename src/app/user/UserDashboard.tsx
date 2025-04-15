@@ -17,6 +17,7 @@ export function UserDashboard() {
     available: 0,
     myReserved: 0,
     myCompleted: 0,
+    myRejected: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -35,6 +36,8 @@ export function UserDashboard() {
         myReserved: myAssignments.filter((post) => post.status === "reserved")
           .length,
         myCompleted: myAssignments.filter((post) => post.status === "completed")
+          .length,
+        myRejected: myAssignments.filter((post) => post.status === "rejected")
           .length,
       });
     } catch (error) {
@@ -69,7 +72,7 @@ export function UserDashboard() {
       </div>
 
       {/* 통계 카드 */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
@@ -105,6 +108,17 @@ export function UserDashboard() {
           <CardContent>
             <p className="text-2xl font-bold text-green-500">
               {stats.myCompleted}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">거절된 글</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold text-red-500">
+              {stats.myRejected}
             </p>
           </CardContent>
         </Card>

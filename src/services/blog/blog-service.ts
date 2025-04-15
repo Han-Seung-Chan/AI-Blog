@@ -139,3 +139,37 @@ export async function getMyAssignments() {
     throw error;
   }
 }
+
+export async function resubmitBlogPost(
+  postId: string,
+  blogUrl: string,
+  resubmissionNotes?: string,
+) {
+  const {
+    data: { session },
+  } = await getCurrentSession();
+  try {
+    const response = await fetch(`/api/blog-posts/${postId}/resubmit`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        blogUrl,
+        resubmissionNotes,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "블로그 글 재제출에 실패했습니다.");
+    }
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error("블로그 글 재제출 오류:", error);
+    throw error;
+  }
+}

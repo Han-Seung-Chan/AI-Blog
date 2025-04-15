@@ -1,6 +1,13 @@
 "use client";
 
-import { Check, ExternalLink, FileText, Loader2, Pencil } from "lucide-react";
+import {
+  Check,
+  ExternalLink,
+  FileText,
+  Loader2,
+  Pencil,
+  FileX,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { CompleteBlogModal } from "@/components/dialog/CompleteBlogModal";
@@ -10,7 +17,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   completeBlogPost,
   getMyAssignments,
+  resubmitBlogPost,
 } from "@/services/blog/blog-service";
+import { ResubmitBlogModal } from "@/components/dialog/ResubmitBlogModal";
+import { getStatusClass, getStatusText } from "@/lib/status-info";
 
 interface UserBlogPostListProps {
   onStatusChange?: () => void;
@@ -27,6 +37,8 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
   const [notes, setNotes] = useState("");
   const [isCompleting, setIsCompleting] = useState(false);
   const [urlError, setUrlError] = useState("");
+  const [isResubmitBlogModal, setIsResubmitBlogModal] = useState(false);
+  const [isResubmitting, setIsResubmitting] = useState(false);
 
   const fetchMyAssignments = async () => {
     try {
@@ -79,31 +91,19 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
     }
   };
 
-  // 상태에 따른 색상 클래스
-  const getStatusClass = (status) => {
-    switch (status) {
-      case "reserved":
-        return "text-yellow-500";
-      case "completed":
-        return "text-green-500";
-      case "approved":
-        return "text-blue-500";
-      default:
-        return "";
-    }
-  };
+  const handleResubmit = async (blogUrl: string, notes: string) => {
+    if (!selectedPost) return;
 
-  // 상태 텍스트
-  const getStatusText = (status) => {
-    switch (status) {
-      case "reserved":
-        return "작성 중";
-      case "completed":
-        return "검수 중";
-      case "approved":
-        return "승인됨";
-      default:
-        return status;
+    try {
+      setIsResubmitting(true);
+      await resubmitBlogPost(selectedPost.id, blogUrl, notes);
+      await fetchMyAssignments();
+      if (onStatusChange) onStatusChange();
+      setIsResubmitBlogModal(false);
+    } catch (error) {
+      console.error("블로그 글 재제출 오류:", error);
+    } finally {
+      setIsResubmitting(false);
     }
   };
 
@@ -167,7 +167,7 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`flex items-center ${getStatusClass(post.status)}`}
+                          className={`flex items-center ${getStatusClass(post.status, "user")}`}
                         >
                           {post.status === "reserved" && (
                             <Pencil className="mr-1 h-4 w-4" />
@@ -178,7 +178,10 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
                           {post.status === "approved" && (
                             <Check className="mr-1 h-4 w-4" />
                           )}
-                          {getStatusText(post.status)}
+                          {post.status === "rejected" && (
+                            <FileX className="mr-1 h-4 w-4" />
+                          )}
+                          {getStatusText(post.status, "user")}
                         </span>
                       </td>
                       <td className="px-4 py-3">
@@ -217,6 +220,22 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
                           </span>
                         )}
 
+                        {post.status === "rejected" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedPost(post);
+                              setBlogUrl(post.blog_url || "");
+                              setNotes("");
+                              setUrlError("");
+                              setIsResubmitBlogModal(true);
+                            }}
+                          >
+                            수정 후 재제출
+                          </Button>
+                        )}
+
                         {post.status === "approved" && (
                           <span className="text-sm text-green-500">승인됨</span>
                         )}
@@ -250,6 +269,13 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
         notes={notes}
         setNotes={setNotes}
         urlError={urlError}
+      />
+      <ResubmitBlogModal
+        isOpen={isResubmitBlogModal}
+        onOpenChange={setIsResubmitBlogModal}
+        selectedPost={selectedPost}
+        onResubmit={handleResubmit}
+        isResubmitting={isResubmitting}
       />
     </div>
   );

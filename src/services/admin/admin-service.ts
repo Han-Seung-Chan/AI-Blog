@@ -195,3 +195,33 @@ export async function deleteBlogPostImage(postId: string, imageId: string) {
     throw error;
   }
 }
+
+export async function rejectBlogPost(postId: string, rejectionReason: string) {
+  const {
+    data: { session },
+  } = await getCurrentSession();
+
+  try {
+    const response = await fetch(`/api/admin/blog-posts/${postId}/reject`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        rejectionReason,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "블로그 글 거절에 실패했습니다.");
+    }
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error("블로그 글 거절 오류:", error);
+    throw error;
+  }
+}

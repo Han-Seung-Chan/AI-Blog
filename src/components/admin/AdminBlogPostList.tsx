@@ -8,6 +8,7 @@ import {
   FileText,
   Image as ImageIcon,
   Loader2,
+  Pencil,
   User,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -23,7 +24,10 @@ import {
   deleteBlogPostImage,
   getMyBlogPosts,
   uploadBlogPostImages,
+  rejectBlogPost,
 } from "@/services/admin/admin-service";
+import { RejectBlogModal } from "@/components/dialog/RejectBlogModal";
+import { getStatusClass, getStatusText } from "@/lib/status-info";
 
 export function AdminBlogPostList() {
   const [posts, setPosts] = useState([]);
@@ -39,6 +43,8 @@ export function AdminBlogPostList() {
   const [postImages, setPostImages] = useState([]);
   const [imageError, setImageError] = useState("");
   const fileInputRef = useRef(null);
+  const [isRejectBlogModal, setIsRejectBlogModal] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
 
   const fetchBlogPosts = async () => {
     try {
@@ -68,6 +74,21 @@ export function AdminBlogPostList() {
       console.error("블로그 글 승인 오류:", error);
     } finally {
       setIsApproving(false);
+    }
+  };
+
+  const handleReject = async (rejectionReason: string) => {
+    if (!selectedPost) return;
+
+    try {
+      setIsRejecting(true);
+      await rejectBlogPost(selectedPost.id, rejectionReason);
+      await fetchBlogPosts();
+      setIsRejectBlogModal(false);
+    } catch (error) {
+      console.error("블로그 글 거절 오류:", error);
+    } finally {
+      setIsRejecting(false);
     }
   };
 
@@ -150,38 +171,6 @@ export function AdminBlogPostList() {
     }
   };
 
-  // 상태에 따른 색상 클래스
-  const getStatusClass = (status) => {
-    switch (status) {
-      case "created":
-        return "text-blue-500";
-      case "reserved":
-        return "text-yellow-500";
-      case "completed":
-        return "text-orange-500";
-      case "approved":
-        return "text-green-500";
-      default:
-        return "";
-    }
-  };
-
-  // 상태 텍스트
-  const getStatusText = (status) => {
-    switch (status) {
-      case "created":
-        return "미예약";
-      case "reserved":
-        return "예약됨";
-      case "completed":
-        return "완료 대기";
-      case "approved":
-        return "승인됨";
-      default:
-        return status;
-    }
-  };
-
   // 날짜별로 그룹화하는 함수
   const groupPostsByDate = () => {
     const grouped = {};
@@ -240,7 +229,6 @@ export function AdminBlogPostList() {
                         <th className="px-4 py-3 text-left">상태</th>
                         <th className="px-4 py-3 text-left">담당자</th>
                         <th className="px-4 py-3 text-left">블로그 링크</th>
-
                         <th className="px-4 py-3 text-left">작업</th>
                       </tr>
                     </thead>
@@ -279,7 +267,7 @@ export function AdminBlogPostList() {
                           </td>
                           <td className="px-4 py-3">
                             <span
-                              className={`flex items-center ${getStatusClass(post.status)}`}
+                              className={`flex items-center ${getStatusClass(post.status, "admin")}`}
                             >
                               {post.status === "created" && (
                                 <AlertCircle className="mr-1 h-4 w-4" />
@@ -293,7 +281,10 @@ export function AdminBlogPostList() {
                               {post.status === "approved" && (
                                 <Check className="mr-1 h-4 w-4" />
                               )}
-                              {getStatusText(post.status)}
+                              {post.status === "rejected" && (
+                                <Pencil className="mr-1 h-4 w-4" />
+                              )}
+                              {getStatusText(post.status, "admin")}
                             </span>
                           </td>
                           <td className="px-4 py-3">
@@ -315,35 +306,39 @@ export function AdminBlogPostList() {
                               "-"
                             )}
                           </td>
-
                           <td className="px-4 py-3">
                             {post.status === "completed" && (
-                              <Button
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedPost(post);
-                                  setFeedback("");
-                                  setIsApproveBlogModal(true);
-                                }}
-                                // 이미지가 없는 경우 승인 버튼 비활성화
-                                disabled={
-                                  !post.images || post.images.length === 0
-                                }
-                                title={
-                                  !post.images || post.images.length === 0
-                                    ? "이미지가 등록되어야 승인할 수 있습니다"
-                                    : ""
-                                }
-                              >
-                                승인하기
-                              </Button>
+                              <div className="flex space-x-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedPost(post);
+                                    setFeedback("");
+                                    setIsApproveBlogModal(true);
+                                  }}
+                                  disabled={
+                                    !post.images || post.images.length === 0
+                                  }
+                                  title={
+                                    !post.images || post.images.length === 0
+                                      ? "이미지가 등록되어야 승인할 수 있습니다"
+                                      : ""
+                                  }
+                                >
+                                  승인하기
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => {
+                                    setSelectedPost(post);
+                                    setIsRejectBlogModal(true);
+                                  }}
+                                >
+                                  거절하기
+                                </Button>
+                              </div>
                             )}
-                            {post.status === "completed" &&
-                              (!post.images || post.images.length === 0) && (
-                                <div className="mt-1 text-xs text-red-500">
-                                  이미지 필요
-                                </div>
-                              )}
                           </td>
                         </tr>
                       ))}
@@ -363,6 +358,15 @@ export function AdminBlogPostList() {
         selectedPost={selectedPost}
         onApprove={handleApprove}
         isApproving={isApproving}
+      />
+
+      {/* 거절 대화 상자 */}
+      <RejectBlogModal
+        isOpen={isRejectBlogModal}
+        onOpenChange={setIsRejectBlogModal}
+        selectedPost={selectedPost}
+        onReject={handleReject}
+        isRejecting={isRejecting}
       />
 
       {/* AI 컨텐츠 대화 상자 */}
