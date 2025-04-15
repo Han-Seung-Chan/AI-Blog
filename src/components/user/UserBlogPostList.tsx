@@ -1,60 +1,35 @@
 "use client";
 
-import {
-  Check,
-  ExternalLink,
-  FileText,
-  Loader2,
-  Pencil,
-  FileX,
-} from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
+import { BlogLink } from "@/components/common/BlogLink";
+import { BlogPostTable } from "@/components/common/BlogPostTable";
+import { BlogStatusBadge } from "@/components/common/BlogStatusBadge";
+import { ViewContentButton } from "@/components/common/ViewContentButton";
 import { CompleteBlogModal } from "@/components/dialog/CompleteBlogModal";
-import { ViewResultModal } from "@/components/dialog/ViewResultModal";
+import { ResubmitBlogModal } from "@/components/dialog/ResubmitBlogModal";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { useUserBlogPosts } from "@/hooks/useUserBlogPosts";
 import {
   completeBlogPost,
-  getMyAssignments,
   resubmitBlogPost,
 } from "@/services/blog/blog-service";
-import { ResubmitBlogModal } from "@/components/dialog/ResubmitBlogModal";
-import { getStatusClass, getStatusText } from "@/lib/status-info";
+import { BlogPost, BlogTableColumn } from "@/types/blog";
 
 interface UserBlogPostListProps {
   onStatusChange?: () => void;
 }
 
 export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
-  const [posts, setPosts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedPost, setSelectedPost] = useState(null);
+  const { posts, isLoading, refreshPosts } = useUserBlogPosts();
+  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [isCompleteBlogModal, setIsCompleteBlogModal] = useState(false);
-  const [isViewResultModal, setIsViewResultModal] = useState(false);
-  const [selectedAiContent, setSelectedAiContent] = useState("");
+  const [isResubmitBlogModal, setIsResubmitBlogModal] = useState(false);
   const [blogUrl, setBlogUrl] = useState("");
   const [notes, setNotes] = useState("");
   const [isCompleting, setIsCompleting] = useState(false);
-  const [urlError, setUrlError] = useState("");
-  const [isResubmitBlogModal, setIsResubmitBlogModal] = useState(false);
   const [isResubmitting, setIsResubmitting] = useState(false);
-
-  const fetchMyAssignments = async () => {
-    try {
-      setIsLoading(true);
-      const data = await getMyAssignments();
-      setPosts(data);
-    } catch (error) {
-      console.error("내 블로그 글 목록 조회 오류:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchMyAssignments();
-  }, []);
+  const [urlError, setUrlError] = useState("");
 
   const handleComplete = async () => {
     if (!selectedPost) return;
@@ -79,7 +54,7 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
       await completeBlogPost(selectedPost.id, blogUrl, notes);
 
       // 목록 새로고침 및 부모 컴포넌트에 알림
-      await fetchMyAssignments();
+      await refreshPosts();
       if (onStatusChange) onStatusChange();
 
       setIsCompleteBlogModal(false);
@@ -97,7 +72,7 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
     try {
       setIsResubmitting(true);
       await resubmitBlogPost(selectedPost.id, blogUrl, notes);
-      await fetchMyAssignments();
+      await refreshPosts();
       if (onStatusChange) onStatusChange();
       setIsResubmitBlogModal(false);
     } catch (error) {
@@ -107,154 +82,94 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
     }
   };
 
-  const handleViewAiContent = (post) => {
-    setSelectedAiContent(post.ai_content || "AI 콘텐츠가 없습니다.");
-    setIsViewResultModal(true);
-  };
+  const columns: BlogTableColumn[] = [
+    { key: "store_name", title: "매장명" },
+    { key: "main_keyword", title: "키워드" },
+    {
+      key: "ai_content",
+      title: "블로그 글",
+      render: (post) => (
+        <ViewContentButton
+          content={post.ai_content || ""}
+          title="블로그 컨텐츠"
+        />
+      ),
+    },
+    {
+      key: "status",
+      title: "상태",
+      render: (post) => (
+        <BlogStatusBadge status={post.status} userType="user" />
+      ),
+    },
+    {
+      key: "blog_url",
+      title: "블로그 링크",
+      render: (post) => <BlogLink url={post.blog_url} />,
+    },
+    {
+      key: "actions",
+      title: "작업",
+      render: (post) => {
+        if (post.status === "reserved") {
+          return (
+            <Button
+              size="sm"
+              onClick={() => {
+                setSelectedPost(post);
+                setBlogUrl("");
+                setNotes("");
+                setUrlError("");
+                setIsCompleteBlogModal(true);
+              }}
+            >
+              완료하기
+            </Button>
+          );
+        }
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center p-8">
-        <Loader2 className="text-primary h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
+        if (post.status === "completed") {
+          return (
+            <span className="text-muted-foreground text-sm">검수 대기 중</span>
+          );
+        }
+
+        if (post.status === "rejected") {
+          return (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setSelectedPost(post);
+                setBlogUrl(post.blog_url || "");
+                setNotes("");
+                setUrlError("");
+                setIsResubmitBlogModal(true);
+              }}
+            >
+              수정 후 재제출
+            </Button>
+          );
+        }
+
+        if (post.status === "approved") {
+          return <span className="text-sm text-green-500">승인됨</span>;
+        }
+
+        return "-";
+      },
+    },
+  ];
 
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">내 블로그 글 목록</h2>
 
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-muted/50">
-                <tr>
-                  <th className="px-4 py-3 text-left">매장명</th>
-                  <th className="px-4 py-3 text-left">키워드</th>
-                  <th className="px-4 py-3 text-left">블로그 글</th>
-                  <th className="px-4 py-3 text-left">상태</th>
-                  <th className="px-4 py-3 text-left">블로그 링크</th>
-                  <th className="px-4 py-3 text-left">작업</th>
-                </tr>
-              </thead>
-              <tbody>
-                {posts.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-4 py-3 text-center">
-                      예약된 블로그 글이 없습니다
-                    </td>
-                  </tr>
-                ) : (
-                  posts.map((post) => (
-                    <tr key={post.id} className="border-t">
-                      <td className="px-4 py-3">{post.store_name}</td>
-                      <td className="px-4 py-3">{post.main_keyword}</td>
-                      <td className="px-4 py-3">
-                        {post.ai_content ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewAiContent(post)}
-                            className="flex items-center"
-                          >
-                            <FileText className="mr-1 h-4 w-4" />
-                            보기
-                          </Button>
-                        ) : (
-                          "-"
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`flex items-center ${getStatusClass(post.status, "user")}`}
-                        >
-                          {post.status === "reserved" && (
-                            <Pencil className="mr-1 h-4 w-4" />
-                          )}
-                          {post.status === "completed" && (
-                            <Check className="mr-1 h-4 w-4" />
-                          )}
-                          {post.status === "approved" && (
-                            <Check className="mr-1 h-4 w-4" />
-                          )}
-                          {post.status === "rejected" && (
-                            <FileX className="mr-1 h-4 w-4" />
-                          )}
-                          {getStatusText(post.status, "user")}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        {post.blog_url ? (
-                          <a
-                            href={post.blog_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary flex items-center hover:underline"
-                          >
-                            링크 <ExternalLink className="ml-1 h-3 w-3" />
-                          </a>
-                        ) : (
-                          "-"
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        {post.status === "reserved" && (
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setSelectedPost(post);
-                              setBlogUrl("");
-                              setNotes("");
-                              setUrlError("");
-                              setIsCompleteBlogModal(true);
-                            }}
-                          >
-                            완료하기
-                          </Button>
-                        )}
-
-                        {post.status === "completed" && (
-                          <span className="text-muted-foreground text-sm">
-                            검수 대기 중
-                          </span>
-                        )}
-
-                        {post.status === "rejected" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedPost(post);
-                              setBlogUrl(post.blog_url || "");
-                              setNotes("");
-                              setUrlError("");
-                              setIsResubmitBlogModal(true);
-                            }}
-                          >
-                            수정 후 재제출
-                          </Button>
-                        )}
-
-                        {post.status === "approved" && (
-                          <span className="text-sm text-green-500">승인됨</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* AI 컨텐츠 대화 상자 */}
-      <ViewResultModal
-        isOpen={isViewResultModal}
-        onOpenChange={setIsViewResultModal}
-        title="블로그 컨텐츠"
-        content={selectedAiContent}
+      <BlogPostTable
+        posts={posts}
+        columns={columns}
+        isLoading={isLoading}
+        emptyMessage="예약된 블로그 글이 없습니다"
       />
 
       {/* 완료 대화 상자 */}
@@ -270,6 +185,8 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
         setNotes={setNotes}
         urlError={urlError}
       />
+
+      {/* 재제출 대화 상자 */}
       <ResubmitBlogModal
         isOpen={isResubmitBlogModal}
         onOpenChange={setIsResubmitBlogModal}

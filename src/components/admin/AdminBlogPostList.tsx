@@ -1,74 +1,47 @@
 "use client";
 
-import {
-  AlertCircle,
-  Calendar,
-  Check,
-  ExternalLink,
-  FileText,
-  Image as ImageIcon,
-  Loader2,
-  Pencil,
-  User,
-} from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Loader2 } from "lucide-react";
+import { useRef, useState } from "react";
 
+import { BlogLink } from "@/components/common/BlogLink";
+import { BlogPostTable } from "@/components/common/BlogPostTable";
+import { BlogStatusBadge } from "@/components/common/BlogStatusBadge";
+import { ViewContentButton } from "@/components/common/ViewContentButton";
 import { ApproveBlogModal } from "@/components/dialog/ApproveBlogModal";
 import { ManageImagesModal } from "@/components/dialog/ManageImagesModal";
-import { ViewResultModal } from "@/components/dialog/ViewResultModal";
+import { RejectBlogModal } from "@/components/dialog/RejectBlogModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAdminBlogPosts } from "@/hooks/useAdminBlogPosts";
 import { formatDate } from "@/lib/date";
 import {
   approveBlogPost,
   deleteBlogPostImage,
-  getMyBlogPosts,
-  uploadBlogPostImages,
   rejectBlogPost,
+  uploadBlogPostImages,
 } from "@/services/admin/admin-service";
-import { RejectBlogModal } from "@/components/dialog/RejectBlogModal";
-import { getStatusClass, getStatusText } from "@/lib/status-info";
+import { BlogPost, BlogTableColumn } from "@/types/blog";
 
 export function AdminBlogPostList() {
-  const [posts, setPosts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedPost, setSelectedPost] = useState(null);
+  const { posts, isLoading, refreshPosts } = useAdminBlogPosts();
+  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [isApproveBlogModal, setIsApproveBlogModal] = useState(false);
-  const [isViewResultModal, setIsViewResultModal] = useState(false);
+  const [isRejectBlogModal, setIsRejectBlogModal] = useState(false);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
-  const [selectedAiContent, setSelectedAiContent] = useState("");
-  const [feedback, setFeedback] = useState("");
   const [isApproving, setIsApproving] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [postImages, setPostImages] = useState([]);
   const [imageError, setImageError] = useState("");
   const fileInputRef = useRef(null);
-  const [isRejectBlogModal, setIsRejectBlogModal] = useState(false);
-  const [isRejecting, setIsRejecting] = useState(false);
 
-  const fetchBlogPosts = async () => {
-    try {
-      setIsLoading(true);
-      const data = await getMyBlogPosts();
-      setPosts(data);
-    } catch (error) {
-      console.error("블로그 글 목록 조회 오류:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchBlogPosts();
-  }, []);
-
-  const handleApprove = async () => {
+  const handleApprove = async (feedback: string) => {
     if (!selectedPost) return;
 
     try {
       setIsApproving(true);
       await approveBlogPost(selectedPost.id, feedback);
-      await fetchBlogPosts();
+      await refreshPosts();
       setIsApproveBlogModal(false);
     } catch (error) {
       console.error("블로그 글 승인 오류:", error);
@@ -83,7 +56,7 @@ export function AdminBlogPostList() {
     try {
       setIsRejecting(true);
       await rejectBlogPost(selectedPost.id, rejectionReason);
-      await fetchBlogPosts();
+      await refreshPosts();
       setIsRejectBlogModal(false);
     } catch (error) {
       console.error("블로그 글 거절 오류:", error);
@@ -92,14 +65,8 @@ export function AdminBlogPostList() {
     }
   };
 
-  const handleViewAiContent = (post) => {
-    setSelectedAiContent(post.ai_content || "AI 콘텐츠가 없습니다.");
-    setIsViewResultModal(true);
-  };
-
-  const handleImageManagement = (post) => {
+  const handleImageManagement = (post: BlogPost) => {
     setSelectedPost(post);
-    // 게시물에 연결된 이미지 목록 가져오기
     setPostImages(post.images || []);
     setImageError("");
     setIsImageDialogOpen(true);
@@ -144,27 +111,23 @@ export function AdminBlogPostList() {
       setPostImages((prev) => [...prev, ...uploadedImages]);
 
       // 블로그 글 목록 다시 가져오기
-      await fetchBlogPosts();
+      await refreshPosts();
     } catch (error) {
       console.error("이미지 업로드 오류:", error);
       setImageError("이미지 업로드 중 오류가 발생했습니다.");
     } finally {
       setIsUploadingImage(false);
       if (fileInputRef.current) {
-        fileInputRef.current.value = null; // 파일 입력 초기화
+        fileInputRef.current.value = null;
       }
     }
   };
 
-  const handleDeleteImage = async (imageId) => {
+  const handleDeleteImage = async (imageId: string) => {
     try {
       await deleteBlogPostImage(selectedPost.id, imageId);
-
-      // 이미지 목록에서 삭제된 이미지 제거
       setPostImages((prev) => prev.filter((img) => img.id !== imageId));
-
-      // 블로그 글 목록 다시 가져오기
-      await fetchBlogPosts();
+      await refreshPosts();
     } catch (error) {
       console.error("이미지 삭제 오류:", error);
       setImageError("이미지 삭제 중 오류가 발생했습니다.");
@@ -183,7 +146,6 @@ export function AdminBlogPostList() {
       grouped[dateKey].push(post);
     });
 
-    // 날짜를 최근 순으로 정렬
     return Object.keys(grouped)
       .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
       .map((date) => ({
@@ -192,13 +154,104 @@ export function AdminBlogPostList() {
       }));
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center p-8">
-        <Loader2 className="text-primary h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
+  const columns: BlogTableColumn[] = [
+    { key: "store_name", title: "매장명" },
+    { key: "main_keyword", title: "키워드" },
+    {
+      key: "ai_content",
+      title: "AI 컨텐츠",
+      render: (post) => (
+        <ViewContentButton
+          content={post.ai_content || ""}
+          title="블로그 컨텐츠"
+        />
+      ),
+    },
+    {
+      key: "images",
+      title: "이미지 등록",
+      render: (post) => (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleImageManagement(post)}
+          className="flex items-center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="mr-1 h-4 w-4"
+          >
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <path d="M21 15l-5-5L5 21" />
+          </svg>
+          {post.images && post.images.length > 0
+            ? `관리 (${post.images.length}/5)`
+            : "등록"}
+        </Button>
+      ),
+    },
+    {
+      key: "status",
+      title: "상태",
+      render: (post) => (
+        <BlogStatusBadge status={post.status} userType="admin" />
+      ),
+    },
+    {
+      key: "assigned_to",
+      title: "담당자",
+      render: (post) =>
+        post.assigned_to ? post.assigned_user?.name || "할당됨" : "-",
+    },
+    {
+      key: "blog_url",
+      title: "블로그 링크",
+      render: (post) => <BlogLink url={post.blog_url} />,
+    },
+    {
+      key: "actions",
+      title: "작업",
+      render: (post) => {
+        if (post.status === "completed") {
+          return (
+            <div className="flex space-x-2">
+              <Button
+                size="sm"
+                onClick={() => {
+                  setSelectedPost(post);
+                  setIsApproveBlogModal(true);
+                }}
+                // disabled={!post.images || post.images.length === 0}
+                title={
+                  !post.images || post.images.length === 0
+                    ? "이미지가 등록되어야 승인할 수 있습니다"
+                    : ""
+                }
+              >
+                승인하기
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => {
+                  setSelectedPost(post);
+                  setIsRejectBlogModal(true);
+                }}
+              >
+                거절하기
+              </Button>
+            </div>
+          );
+        }
+        return null;
+      },
+    },
+  ];
 
   const groupedPosts = groupPostsByDate();
 
@@ -206,7 +259,11 @@ export function AdminBlogPostList() {
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">블로그 글 목록</h2>
 
-      {groupedPosts.length === 0 ? (
+      {isLoading ? (
+        <div className="flex justify-center p-8">
+          <Loader2 className="text-primary h-8 w-8 animate-spin" />
+        </div>
+      ) : groupedPosts.length === 0 ? (
         <Card>
           <CardContent className="p-6 text-center">
             <p>표시할 블로그 글이 없습니다.</p>
@@ -216,142 +273,17 @@ export function AdminBlogPostList() {
         groupedPosts.map((group) => (
           <div key={group.date} className="space-y-2">
             <h3 className="text-lg font-medium">{group.date}</h3>
-            <Card>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-muted/50">
-                      <tr>
-                        <th className="px-4 py-3 text-left">매장명</th>
-                        <th className="px-4 py-3 text-left">키워드</th>
-                        <th className="px-4 py-3 text-left">AI 컨텐츠</th>
-                        <th className="px-4 py-3 text-left">이미지 등록</th>
-                        <th className="px-4 py-3 text-left">상태</th>
-                        <th className="px-4 py-3 text-left">담당자</th>
-                        <th className="px-4 py-3 text-left">블로그 링크</th>
-                        <th className="px-4 py-3 text-left">작업</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {group.posts.map((post) => (
-                        <tr key={post.id} className="border-t">
-                          <td className="px-4 py-3">{post.store_name}</td>
-                          <td className="px-4 py-3">{post.main_keyword}</td>
-                          <td className="px-4 py-3">
-                            {post.ai_content ? (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleViewAiContent(post)}
-                                className="flex items-center"
-                              >
-                                <FileText className="mr-1 h-4 w-4" />
-                                보기
-                              </Button>
-                            ) : (
-                              "-"
-                            )}
-                          </td>
-                          <td className="px-4 py-3">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleImageManagement(post)}
-                              className="flex items-center"
-                            >
-                              <ImageIcon className="mr-1 h-4 w-4" />
-                              {post.images && post.images.length > 0
-                                ? `관리 (${post.images.length}/5)`
-                                : "등록"}
-                            </Button>
-                          </td>
-                          <td className="px-4 py-3">
-                            <span
-                              className={`flex items-center ${getStatusClass(post.status, "admin")}`}
-                            >
-                              {post.status === "created" && (
-                                <AlertCircle className="mr-1 h-4 w-4" />
-                              )}
-                              {post.status === "reserved" && (
-                                <User className="mr-1 h-4 w-4" />
-                              )}
-                              {post.status === "completed" && (
-                                <Calendar className="mr-1 h-4 w-4" />
-                              )}
-                              {post.status === "approved" && (
-                                <Check className="mr-1 h-4 w-4" />
-                              )}
-                              {post.status === "rejected" && (
-                                <Pencil className="mr-1 h-4 w-4" />
-                              )}
-                              {getStatusText(post.status, "admin")}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            {post.assigned_to
-                              ? post.assigned_user?.name || "할당됨"
-                              : "-"}
-                          </td>
-                          <td className="px-4 py-3">
-                            {post.blog_url ? (
-                              <a
-                                href={post.blog_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-primary flex items-center hover:underline"
-                              >
-                                링크 <ExternalLink className="ml-1 h-3 w-3" />
-                              </a>
-                            ) : (
-                              "-"
-                            )}
-                          </td>
-                          <td className="px-4 py-3">
-                            {post.status === "completed" && (
-                              <div className="flex space-x-2">
-                                <Button
-                                  size="sm"
-                                  onClick={() => {
-                                    setSelectedPost(post);
-                                    setFeedback("");
-                                    setIsApproveBlogModal(true);
-                                  }}
-                                  disabled={
-                                    !post.images || post.images.length === 0
-                                  }
-                                  title={
-                                    !post.images || post.images.length === 0
-                                      ? "이미지가 등록되어야 승인할 수 있습니다"
-                                      : ""
-                                  }
-                                >
-                                  승인하기
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => {
-                                    setSelectedPost(post);
-                                    setIsRejectBlogModal(true);
-                                  }}
-                                >
-                                  거절하기
-                                </Button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
+            <BlogPostTable
+              posts={group.posts}
+              columns={columns}
+              isLoading={false}
+              emptyMessage=""
+            />
           </div>
         ))
       )}
 
-      {/* 승인 대화 상자 */}
+      {/* 모달 대화상자들 */}
       <ApproveBlogModal
         isOpen={isApproveBlogModal}
         onOpenChange={setIsApproveBlogModal}
@@ -360,7 +292,6 @@ export function AdminBlogPostList() {
         isApproving={isApproving}
       />
 
-      {/* 거절 대화 상자 */}
       <RejectBlogModal
         isOpen={isRejectBlogModal}
         onOpenChange={setIsRejectBlogModal}
@@ -369,15 +300,6 @@ export function AdminBlogPostList() {
         isRejecting={isRejecting}
       />
 
-      {/* AI 컨텐츠 대화 상자 */}
-      <ViewResultModal
-        isOpen={isViewResultModal}
-        onOpenChange={setIsViewResultModal}
-        title="블로그 컨텐츠"
-        content={selectedAiContent}
-      />
-
-      {/* 이미지 관리 대화 상자 */}
       <ManageImagesModal
         isOpen={isImageDialogOpen}
         onOpenChange={setIsImageDialogOpen}
