@@ -1,7 +1,6 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,13 +13,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Dispatch, SetStateAction } from "react";
 
 interface CompleteBlogModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedPost: any; // 타입을 더 구체적으로 정의할 수 있습니다
+  selectedPost: any;
   onComplete: (blogUrl: string, notes: string) => Promise<void>;
   isCompleting: boolean;
+  blogUrl: string;
+  setBlogUrl: Dispatch<SetStateAction<string>>;
+  notes: string;
+  setNotes: Dispatch<SetStateAction<string>>;
+  urlError: string;
 }
 
 export function CompleteBlogModal({
@@ -29,29 +34,12 @@ export function CompleteBlogModal({
   selectedPost,
   onComplete,
   isCompleting,
+  blogUrl,
+  setBlogUrl,
+  notes,
+  setNotes,
+  urlError,
 }: CompleteBlogModalProps) {
-  const [blogUrl, setBlogUrl] = useState("");
-  const [notes, setNotes] = useState("");
-  const [urlError, setUrlError] = useState("");
-
-  const handleComplete = async () => {
-    // URL 유효성 검증
-    if (!blogUrl.trim()) {
-      setUrlError("블로그 URL은 필수 항목입니다.");
-      return;
-    }
-
-    if (!blogUrl.startsWith("http://") && !blogUrl.startsWith("https://")) {
-      setUrlError(
-        "유효한 URL 형식이 아닙니다. http:// 또는 https://로 시작해야 합니다.",
-      );
-      return;
-    }
-
-    setUrlError("");
-    await onComplete(blogUrl, notes);
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -96,7 +84,10 @@ export function CompleteBlogModal({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             취소
           </Button>
-          <Button onClick={handleComplete} disabled={isCompleting}>
+          <Button
+            onClick={() => onComplete(blogUrl, notes)}
+            disabled={isCompleting}
+          >
             {isCompleting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -245,6 +245,11 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
         selectedPost={selectedPost}
         onComplete={handleComplete}
         isCompleting={isCompleting}
+        blogUrl={blogUrl}
+        setBlogUrl={setBlogUrl}
+        notes={notes}
+        setNotes={setNotes}
+        urlError={urlError}
       />
     </div>
   );
