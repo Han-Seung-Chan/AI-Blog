@@ -205,12 +205,6 @@ export function AdminBlogPostList() {
                   setSelectedPost(post);
                   setIsApproveBlogModal(true);
                 }}
-                // disabled={!post.images || post.images.length === 0}
-                title={
-                  !post.images || post.images.length === 0
-                    ? "이미지가 등록되어야 승인할 수 있습니다"
-                    : ""
-                }
               >
                 승인하기
               </Button>
