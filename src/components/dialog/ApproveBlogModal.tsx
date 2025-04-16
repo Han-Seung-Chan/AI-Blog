@@ -55,8 +55,22 @@ export function ApproveBlogModal({
                 rel="noopener noreferrer"
                 className="text-primary flex items-center hover:underline"
               >
-                블로그 글 확인하기 <ExternalLink className="ml-1 h-4 w-4" />
+                블로그 글 확인하기
+                <ExternalLink className="ml-1 h-4 w-4" />
               </a>
+            </div>
+          )}
+
+          {(selectedPost?.resubmission_notes ||
+            selectedPost?.completion_notes) && (
+            <div className="mb-4 rounded-md">
+              <h4 className="text-sm font-semibold">
+                유저 메모:{" "}
+                <span className="text-sm font-medium">
+                  {selectedPost?.resubmission_notes ||
+                    selectedPost?.completion_notes}
+                </span>
+              </h4>
             </div>
           )}
 
