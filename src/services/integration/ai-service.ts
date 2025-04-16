@@ -26,7 +26,6 @@ export async function generateContent(
     const {
       data: { session },
     } = await getCurrentSession();
-    console.log(session);
 
     // Supabase에 저장 (관리자로 로그인한 경우)
     try {

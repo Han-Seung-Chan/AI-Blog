@@ -73,7 +73,6 @@ export function AdminBlogPostList() {
 
     try {
       const images = await getBlogPostImages(post.id);
-      console.log(images);
 
       setPostImages(images);
     } catch (error) {
@@ -124,8 +123,7 @@ export function AdminBlogPostList() {
       // 업로드 성공 시 이미지 목록 업데이트
       setPostImages((prev) => [...uploadedImages, ...prev]);
 
-      // 블로그 글 목록 다시 가져오기
-      // await refreshPosts();
+      await refreshPosts();
     } catch (error) {
       console.error("이미지 업로드 오류:", error);
       setImageError("이미지 업로드 중 오류가 발생했습니다.");

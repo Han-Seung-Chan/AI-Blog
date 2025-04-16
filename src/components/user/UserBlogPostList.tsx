@@ -1,5 +1,6 @@
 "use client";
 
+import { BookImage } from "lucide-react";
 import { useState } from "react";
 
 import { BlogLink } from "@/components/common/BlogLink";
@@ -8,15 +9,15 @@ import { BlogStatusBadge } from "@/components/common/BlogStatusBadge";
 import { ViewContentButton } from "@/components/common/ViewContentButton";
 import { CompleteBlogModal } from "@/components/dialog/CompleteBlogModal";
 import { ResubmitBlogModal } from "@/components/dialog/ResubmitBlogModal";
+import { ViewImagesModal } from "@/components/dialog/ViewImagesModal";
 import { Button } from "@/components/ui/button";
 import { useUserBlogPosts } from "@/hooks/useUserBlogPosts";
 import {
   completeBlogPost,
+  getBlogPostImages,
   resubmitBlogPost,
 } from "@/services/blog/blog-service";
 import { BlogPost, BlogTableColumn } from "@/types/blog";
-import { getBlogPostImages } from "@/services/admin/admin-service";
-import { BookImage } from "lucide-react";
 
 interface UserBlogPostListProps {
   onStatusChange?: () => void;
@@ -32,6 +33,7 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
   const [blogUrl, setBlogUrl] = useState("");
   const [notes, setNotes] = useState("");
   const [isCompleting, setIsCompleting] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [postImages, setPostImages] = useState([]);
   const [isResubmitting, setIsResubmitting] = useState(false);
   const [urlError, setUrlError] = useState("");
@@ -91,10 +93,10 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
   const handleImageManagement = async (post: BlogPost) => {
     setSelectedPost(post);
     setImageError("");
+    setIsUploadingImage(true);
 
     try {
       const images = await getBlogPostImages(post.id);
-      console.log(images);
 
       setPostImages(images);
     } catch (error) {
@@ -102,6 +104,7 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
       setImageError("이미지를 불러오는 중 오류가 발생했습니다.");
       setPostImages([]);
     } finally {
+      setIsUploadingImage(false);
       setIsImageDialogOpen(true);
     }
   };
@@ -232,6 +235,16 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
         selectedPost={selectedPost}
         onResubmit={handleResubmit}
         isResubmitting={isResubmitting}
+      />
+
+      {/* 이미지 보기 모달 */}
+      <ViewImagesModal
+        isOpen={isImageDialogOpen}
+        onOpenChange={setIsImageDialogOpen}
+        selectedPost={selectedPost}
+        postImages={postImages}
+        imageError={imageError}
+        isLoading={isUploadingImage}
       />
     </div>
   );

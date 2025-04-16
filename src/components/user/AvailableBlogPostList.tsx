@@ -1,5 +1,6 @@
 "use client";
 
+import { BookImage } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -7,12 +8,14 @@ import { BlogLink } from "@/components/common/BlogLink";
 import { BlogPostTable } from "@/components/common/BlogPostTable";
 import { ViewContentButton } from "@/components/common/ViewContentButton";
 import { ReserveBlogModal } from "@/components/dialog/ReserveBlogModal";
+import { ViewImagesModal } from "@/components/dialog/ViewImagesModal";
 import { Button } from "@/components/ui/button";
 import { useAvailableBlogPosts } from "@/hooks/useAvailableBlogPosts";
-import { reserveBlogPost } from "@/services/blog/blog-service";
+import {
+  getBlogPostImages,
+  reserveBlogPost,
+} from "@/services/blog/blog-service";
 import { BlogPost, BlogTableColumn } from "@/types/blog";
-import { getBlogPostImages } from "@/services/admin/admin-service";
-import { BookImage } from "lucide-react";
 
 export function AvailableBlogPostList() {
   const router = useRouter();
@@ -21,6 +24,7 @@ export function AvailableBlogPostList() {
   const [isReserveBlogModal, setIsReserveBlogModal] = useState(false);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const [isReserving, setIsReserving] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [postImages, setPostImages] = useState([]);
   const [imageError, setImageError] = useState("");
   const [reserveError, setReserveError] = useState("");
@@ -28,10 +32,10 @@ export function AvailableBlogPostList() {
   const handleImageManagement = async (post: BlogPost) => {
     setSelectedPost(post);
     setImageError("");
+    setIsUploadingImage(true);
 
     try {
       const images = await getBlogPostImages(post.id);
-      console.log(images);
 
       setPostImages(images);
     } catch (error) {
@@ -39,6 +43,7 @@ export function AvailableBlogPostList() {
       setImageError("이미지를 불러오는 중 오류가 발생했습니다.");
       setPostImages([]);
     } finally {
+      setIsUploadingImage(false);
       setIsImageDialogOpen(true);
     }
   };
@@ -136,6 +141,16 @@ export function AvailableBlogPostList() {
         onReserve={handleReserve}
         isReserving={isReserving}
         error={reserveError}
+      />
+
+      {/* 이미지 보기 모달 */}
+      <ViewImagesModal
+        isOpen={isImageDialogOpen}
+        onOpenChange={setIsImageDialogOpen}
+        selectedPost={selectedPost}
+        postImages={postImages}
+        imageError={imageError}
+        isLoading={isUploadingImage}
       />
     </div>
   );

@@ -9,7 +9,6 @@ import { useAuth } from "@/hooks/useAuth";
 export default function Home() {
   const { user, isAdmin, isLoading } = useAuth();
   const router = useRouter();
-  console.log(user);
 
   useEffect(() => {
     if (!isLoading) {
