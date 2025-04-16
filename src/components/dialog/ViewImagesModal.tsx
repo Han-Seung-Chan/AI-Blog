@@ -11,18 +11,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { handleDownloadImage } from "@/lib/download";
-
-interface PostImage {
-  id: string;
-  url: string;
-  file_name?: string;
-}
+import { BlogPost } from "@/types/blog";
+import { BlogImage } from "@/types/image";
 
 interface ViewImagesModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedPost: any;
-  postImages: PostImage[];
+  selectedPost: BlogPost | null;
+  postImages: BlogImage[];
   imageError: string;
   isLoading?: boolean;
 }

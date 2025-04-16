@@ -25,9 +25,9 @@ export function ViewContentButton({
   buttonVariant = "outline",
   buttonSize = "sm",
 }: ViewContentButtonProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  if (!content) return "-";
+  if (!content) return <>-</>;
 
   return (
     <>

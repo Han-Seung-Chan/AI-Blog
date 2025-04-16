@@ -16,27 +16,27 @@ import {
   reserveBlogPost,
 } from "@/services/blog/blog-service";
 import { BlogPost, BlogTableColumn } from "@/types/blog";
+import { BlogImage } from "@/types/image";
 
 export function AvailableBlogPostList() {
   const router = useRouter();
   const { posts, isLoading, error } = useAvailableBlogPosts();
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
-  const [isReserveBlogModal, setIsReserveBlogModal] = useState(false);
-  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
-  const [isReserving, setIsReserving] = useState(false);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [postImages, setPostImages] = useState([]);
-  const [imageError, setImageError] = useState("");
-  const [reserveError, setReserveError] = useState("");
+  const [isReserveBlogModal, setIsReserveBlogModal] = useState<boolean>(false);
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState<boolean>(false);
+  const [isReserving, setIsReserving] = useState<boolean>(false);
+  const [isUploadingImage, setIsUploadingImage] = useState<boolean>(false);
+  const [postImages, setPostImages] = useState<BlogImage[]>([]);
+  const [imageError, setImageError] = useState<string>("");
+  const [reserveError, setReserveError] = useState<string>("");
 
-  const handleImageManagement = async (post: BlogPost) => {
+  const handleImageManagement = async (post: BlogPost): Promise<void> => {
     setSelectedPost(post);
     setImageError("");
     setIsUploadingImage(true);
 
     try {
       const images = await getBlogPostImages(post.id);
-
       setPostImages(images);
     } catch (error) {
       console.error("이미지 목록 조회 오류:", error);
@@ -48,7 +48,7 @@ export function AvailableBlogPostList() {
     }
   };
 
-  const handleReserve = async () => {
+  const handleReserve = async (): Promise<void> => {
     if (!selectedPost) return;
 
     try {

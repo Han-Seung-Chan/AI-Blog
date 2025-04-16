@@ -11,17 +11,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-interface PostImage {
-  id: string;
-  url: string;
-}
+import { BlogPost } from "@/types/blog";
+import { BlogImage } from "@/types/image";
 
 interface ManageImagesModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedPost: any;
-  postImages: PostImage[];
+  selectedPost: BlogPost | null;
+  postImages: BlogImage[];
   isUploadingImage: boolean;
   imageError: string;
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;

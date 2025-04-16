@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { useBlogContentGenerator } from "@/hooks/useBlogContentGenerator";
 import { ExcelRowData } from "@/types/excel";
+import { ProcessResult } from "@/types/workflow";
 
 interface BlogBatchProcessorProps {
   data: ExcelRowData[];
@@ -65,7 +66,7 @@ export function BlogBatchProcessor({ data, onReset }: BlogBatchProcessorProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {results.map((result, index) => (
+              {results.map((result: ProcessResult, index: number) => (
                 <ResultItem
                   key={index}
                   result={result}

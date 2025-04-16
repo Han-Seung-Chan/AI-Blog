@@ -9,11 +9,11 @@ import { ExcelRowData } from "@/types/excel";
 export function PageClient() {
   const [excelData, setExcelData] = useState<ExcelRowData[]>([]);
 
-  const handleDataLoaded = (data: ExcelRowData[]) => {
+  const handleDataLoaded = (data: ExcelRowData[]): void => {
     setExcelData(data);
   };
 
-  const handleReset = () => {
+  const handleReset = (): void => {
     setExcelData([]);
   };
 

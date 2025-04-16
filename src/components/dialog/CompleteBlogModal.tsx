@@ -14,11 +14,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { BlogPost } from "@/types/blog";
 
 interface CompleteBlogModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedPost: any;
+  selectedPost: BlogPost | null;
   onComplete: (blogUrl: string, notes: string) => Promise<void>;
   isCompleting: boolean;
   blogUrl: string;

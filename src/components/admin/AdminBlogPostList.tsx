@@ -1,7 +1,7 @@
 "use client";
 
 import { BookImage, Loader2 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { BlogLink } from "@/components/common/BlogLink";
 import { BlogPostTable } from "@/components/common/BlogPostTable";
@@ -22,21 +22,22 @@ import {
   uploadBlogPostImages,
 } from "@/services/admin/admin-service";
 import { BlogPost, BlogTableColumn } from "@/types/blog";
+import { BlogImage } from "@/types/image";
 
 export function AdminBlogPostList() {
   const { posts, isLoading, refreshPosts } = useAdminBlogPosts();
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
-  const [isApproveBlogModal, setIsApproveBlogModal] = useState(false);
-  const [isRejectBlogModal, setIsRejectBlogModal] = useState(false);
-  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
-  const [isApproving, setIsApproving] = useState(false);
-  const [isRejecting, setIsRejecting] = useState(false);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [postImages, setPostImages] = useState([]);
-  const [imageError, setImageError] = useState("");
-  const fileInputRef = useRef(null);
+  const [isApproveBlogModal, setIsApproveBlogModal] = useState<boolean>(false);
+  const [isRejectBlogModal, setIsRejectBlogModal] = useState<boolean>(false);
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState<boolean>(false);
+  const [isApproving, setIsApproving] = useState<boolean>(false);
+  const [isRejecting, setIsRejecting] = useState<boolean>(false);
+  const [isUploadingImage, setIsUploadingImage] = useState<boolean>(false);
+  const [postImages, setPostImages] = useState<BlogImage[]>([]);
+  const [imageError, setImageError] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleApprove = async (feedback: string) => {
+  const handleApprove = async (feedback: string): Promise<void> => {
     if (!selectedPost) return;
 
     try {
@@ -51,7 +52,7 @@ export function AdminBlogPostList() {
     }
   };
 
-  const handleReject = async (rejectionReason: string) => {
+  const handleReject = async (rejectionReason: string): Promise<void> => {
     if (!selectedPost) return;
 
     try {
@@ -66,7 +67,7 @@ export function AdminBlogPostList() {
     }
   };
 
-  const handleImageManagement = async (post: BlogPost) => {
+  const handleImageManagement = async (post: BlogPost): Promise<void> => {
     setSelectedPost(post);
     setImageError("");
     setIsUploadingImage(true);
@@ -85,8 +86,11 @@ export function AdminBlogPostList() {
     }
   };
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files);
+  const handleFileSelect = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): Promise<void> => {
+    if (!selectedPost) return;
+    const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
     // 파일 유효성 검사
@@ -122,20 +126,20 @@ export function AdminBlogPostList() {
 
       // 업로드 성공 시 이미지 목록 업데이트
       setPostImages((prev) => [...uploadedImages, ...prev]);
-
-      await refreshPosts();
     } catch (error) {
       console.error("이미지 업로드 오류:", error);
       setImageError("이미지 업로드 중 오류가 발생했습니다.");
     } finally {
       setIsUploadingImage(false);
       if (fileInputRef.current) {
-        fileInputRef.current.value = null;
+        fileInputRef.current.value = "";
       }
     }
   };
 
-  const handleDeleteImage = async (imageId: string) => {
+  const handleDeleteImage = async (imageId: string): Promise<void> => {
+    if (!selectedPost) return;
+
     try {
       await deleteBlogPostImage(selectedPost.id, imageId);
       setPostImages((prev) => prev.filter((img) => img.id !== imageId));
@@ -145,6 +149,11 @@ export function AdminBlogPostList() {
       setImageError("이미지 삭제 중 오류가 발생했습니다.");
     }
   };
+
+  useEffect(() => {
+    if (isImageDialogOpen) return;
+    refreshPosts();
+  }, [isImageDialogOpen]);
 
   const columns: BlogTableColumn[] = [
     { key: "store_name", title: "매장명" },

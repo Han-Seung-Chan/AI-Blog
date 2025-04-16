@@ -8,21 +8,30 @@ import { AdminBlogPostList } from "@/components/admin/AdminBlogPostList";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getMyBlogPosts } from "@/services/admin/admin-service";
+import { BlogPost } from "@/types/blog";
+
+interface DashboardStats {
+  total: number;
+  created: number;
+  reserved: number;
+  completed: number;
+  approved: number;
+}
 
 export function AdminDashboard() {
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<DashboardStats>({
     total: 0,
     created: 0,
     reserved: 0,
     completed: 0,
     approved: 0,
   });
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const fetchBlogPosts = async () => {
+    const fetchBlogPosts = async (): Promise<void> => {
       try {
-        const posts = await getMyBlogPosts();
+        const posts: BlogPost[] = await getMyBlogPosts();
 
         // 통계 계산
         const newStats = {

@@ -9,13 +9,29 @@ import {
   registerUser,
   setupAuthStateChangeListener,
 } from "@/services/auth/auth-service";
+import { User } from "@/types/auth";
 
-export function useAuth() {
+interface AuthState {
+  user: User | null;
+  isAdmin: boolean;
+  isLoading: boolean;
+  error: string;
+  login: (email: string, password: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    name: string,
+    role: string,
+  ) => Promise<void>;
+  logout: () => Promise<void>;
+}
+
+export function useAuth(): AuthState {
   const router = useRouter();
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   // 사용자 세션 확인
   useEffect(() => {
@@ -28,7 +44,7 @@ export function useAuth() {
         } = await getCurrentSession();
 
         if (session) {
-          setUser(session.user);
+          setUser(session.user as User);
 
           const { data: userData } = await getUserRole(session.user.id);
           setIsAdmin(userData?.role === "admin");
@@ -50,7 +66,7 @@ export function useAuth() {
       data: { subscription },
     } = setupAuthStateChangeListener(async (session) => {
       if (session) {
-        setUser(session.user);
+        setUser(session.user as User);
 
         // 사용자 역할 확인
         const { data: userData } = await getUserRole(session.user.id);
@@ -79,7 +95,7 @@ export function useAuth() {
       } else {
         router.push("/dashboard");
       }
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message || "로그인 중 오류가 발생했습니다");
     } finally {
       setIsLoading(false);
@@ -100,7 +116,7 @@ export function useAuth() {
 
       // 자동 로그인 (회원가입 후)
       await login(email, password);
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message || "회원가입 중 오류가 발생했습니다");
       setIsLoading(false);
     }

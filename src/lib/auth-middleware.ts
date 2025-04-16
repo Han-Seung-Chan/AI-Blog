@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { supabase } from "@/lib/supabase";
+import { User } from "@/types/auth";
+
+interface VerifyUserRoleResult {
+  user: User | null;
+  errorResponse: NextResponse | null;
+}
 
 export async function verifyUserRole(
   request: NextRequest,
-  requiredRole: string = "admin",
-) {
+  requiredRole: "admin" | "user" = "admin",
+): Promise<VerifyUserRoleResult> {
   // 인증 토큰 확인
   const authHeader = request.headers.get("authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -63,7 +69,7 @@ export async function verifyUserRole(
   }
 
   return {
-    user,
+    user: user as User,
     errorResponse: null,
   };
 }

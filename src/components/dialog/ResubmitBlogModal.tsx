@@ -14,11 +14,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { BlogPost } from "@/types/blog";
 
 interface ResubmitBlogModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedPost: any;
+  selectedPost: BlogPost | null;
   onResubmit: (blogUrl: string, notes: string) => Promise<void>;
   isResubmitting: boolean;
 }
@@ -30,11 +31,11 @@ export function ResubmitBlogModal({
   onResubmit,
   isResubmitting,
 }: ResubmitBlogModalProps) {
-  const [blogUrl, setBlogUrl] = useState(selectedPost?.blog_url || "");
-  const [notes, setNotes] = useState("");
-  const [urlError, setUrlError] = useState("");
+  const [blogUrl, setBlogUrl] = useState<string>(selectedPost?.blog_url || "");
+  const [notes, setNotes] = useState<string>("");
+  const [urlError, setUrlError] = useState<string>("");
 
-  const handleResubmit = async () => {
+  const handleResubmit = async (): Promise<void> => {
     // URL 유효성 검증
     if (!blogUrl.trim()) {
       setUrlError("블로그 URL은 필수 항목입니다.");

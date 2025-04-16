@@ -1,7 +1,7 @@
 export const handleDownloadImage = async (
   imageUrl: string,
   fileName: string,
-) => {
+): Promise<void> => {
   try {
     // fetch를 사용하여 이미지 데이터 가져오기
     const response = await fetch(imageUrl);

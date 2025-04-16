@@ -1,9 +1,15 @@
 export type BatchStatus = "idle" | "processing" | "completed";
 
+export type ProcessResultStatus =
+  | "completed"
+  | "failed"
+  | "processing"
+  | "waiting";
+
 export interface ProcessResult {
   rowIndex: number;
   storeName: string;
-  status: "completed" | "failed" | "processing" | "waiting";
+  status: ProcessResultStatus;
   result?: string;
   error?: string;
   details?: string;

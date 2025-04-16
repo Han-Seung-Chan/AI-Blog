@@ -18,6 +18,7 @@ import {
   resubmitBlogPost,
 } from "@/services/blog/blog-service";
 import { BlogPost, BlogTableColumn } from "@/types/blog";
+import { BlogImage } from "@/types/image";
 
 interface UserBlogPostListProps {
   onStatusChange?: () => void;
@@ -26,20 +27,22 @@ interface UserBlogPostListProps {
 export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
   const { posts, isLoading, refreshPosts } = useUserBlogPosts();
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
-  const [isCompleteBlogModal, setIsCompleteBlogModal] = useState(false);
-  const [isResubmitBlogModal, setIsResubmitBlogModal] = useState(false);
-  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [isCompleteBlogModal, setIsCompleteBlogModal] =
+    useState<boolean>(false);
+  const [isResubmitBlogModal, setIsResubmitBlogModal] =
+    useState<boolean>(false);
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState<boolean>(false);
 
-  const [blogUrl, setBlogUrl] = useState("");
-  const [notes, setNotes] = useState("");
-  const [isCompleting, setIsCompleting] = useState(false);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [postImages, setPostImages] = useState([]);
-  const [isResubmitting, setIsResubmitting] = useState(false);
-  const [urlError, setUrlError] = useState("");
-  const [imageError, setImageError] = useState("");
+  const [blogUrl, setBlogUrl] = useState<string>("");
+  const [notes, setNotes] = useState<string>("");
+  const [isCompleting, setIsCompleting] = useState<boolean>(false);
+  const [isUploadingImage, setIsUploadingImage] = useState<boolean>(false);
+  const [postImages, setPostImages] = useState<BlogImage[]>([]);
+  const [isResubmitting, setIsResubmitting] = useState<boolean>(false);
+  const [urlError, setUrlError] = useState<string>("");
+  const [imageError, setImageError] = useState<string>("");
 
-  const handleComplete = async () => {
+  const handleComplete = async (): Promise<void> => {
     if (!selectedPost) return;
 
     // URL 유효성 검증
@@ -74,7 +77,10 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
     }
   };
 
-  const handleResubmit = async (blogUrl: string, notes: string) => {
+  const handleResubmit = async (
+    blogUrl: string,
+    notes: string,
+  ): Promise<void> => {
     if (!selectedPost) return;
 
     try {
@@ -90,14 +96,13 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
     }
   };
 
-  const handleImageManagement = async (post: BlogPost) => {
+  const handleImageManagement = async (post: BlogPost): Promise<void> => {
     setSelectedPost(post);
     setImageError("");
     setIsUploadingImage(true);
 
     try {
       const images = await getBlogPostImages(post.id);
-
       setPostImages(images);
     } catch (error) {
       console.error("이미지 목록 조회 오류:", error);

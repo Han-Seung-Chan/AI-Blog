@@ -12,11 +12,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { BlogPost } from "@/types/blog";
 
 interface ApproveBlogModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedPost: any;
+  selectedPost: BlogPost | null;
   onApprove: (feedback: string) => Promise<void>;
   isApproving: boolean;
 }
@@ -28,9 +29,9 @@ export function ApproveBlogModal({
   onApprove,
   isApproving,
 }: ApproveBlogModalProps) {
-  const [feedback, setFeedback] = useState("");
+  const [feedback, setFeedback] = useState<string>("");
 
-  const handleApprove = async () => {
+  const handleApprove = async (): Promise<void> => {
     await onApprove(feedback);
   };
 

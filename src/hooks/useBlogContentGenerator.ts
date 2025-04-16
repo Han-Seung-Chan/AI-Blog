@@ -1,22 +1,35 @@
 import JSZip from "jszip";
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 
 import { getRandomAgeGroup, getRandomGender } from "@/lib/random";
 import { generateContent } from "@/services/integration/ai-service";
 import { ExcelRowData } from "@/types/excel";
-import { BatchStatus, GenerationData,ProcessResult } from "@/types/workflow";
+import { BatchStatus, GenerationData, ProcessResult } from "@/types/workflow";
+
+interface BlogContentGeneratorState {
+  batchStatus: BatchStatus;
+  results: ProcessResult[];
+  currentIndex: number;
+  allSelected: boolean;
+  hasCompletedItems: boolean;
+  selectedCount: number;
+  resetBatch: () => void;
+  downloadResults: () => Promise<void>;
+  handleSelectChange: (index: number, isSelected: boolean) => void;
+  toggleSelectAll: () => void;
+}
 
 export function useBlogContentGenerator(
   data: ExcelRowData[],
   onReset: () => void,
-) {
+): BlogContentGeneratorState {
   const [batchStatus, setBatchStatus] = useState<BatchStatus>("idle");
   const [results, setResults] = useState<ProcessResult[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
 
   // 숫자 대신 상태를 나타내는 boolean 값들
-  const [hasCompletedItems, setHasCompletedItems] = useState(false);
-  const [allSelected, setAllSelected] = useState(false);
+  const [hasCompletedItems, setHasCompletedItems] = useState<boolean>(false);
+  const [allSelected, setAllSelected] = useState<boolean>(false);
 
   const processRow = async (
     row: ExcelRowData,
@@ -69,7 +82,7 @@ export function useBlogContentGenerator(
 
       // 성공 항목 추가
       setHasCompletedItems(true);
-    } catch (error) {
+    } catch (error: any) {
       setResults((prev) =>
         prev.map((result, idx) =>
           idx === index
@@ -93,7 +106,7 @@ export function useBlogContentGenerator(
       // 모든 상태 초기화
       const initialResults: ProcessResult[] = data.map((row, index) => ({
         rowIndex: index,
-        storeName: row.storeName || `데이터 #${index + 1}`,
+        storeName: (row.storeName as string) || `데이터 #${index + 1}`,
         status: "waiting",
         isSelected: false,
       }));
@@ -119,7 +132,7 @@ export function useBlogContentGenerator(
   }, [data]);
 
   // 체크박스 선택 상태 변경 핸들러
-  const handleSelectChange = (index: number, isSelected: boolean) => {
+  const handleSelectChange = (index: number, isSelected: boolean): void => {
     setResults((prev) =>
       prev.map((result, idx) =>
         idx === index ? { ...result, isSelected } : result,
@@ -136,7 +149,7 @@ export function useBlogContentGenerator(
   };
 
   // 전체 선택/해제 토글 핸들러
-  const toggleSelectAll = () => {
+  const toggleSelectAll = (): void => {
     const newSelectAllState = !allSelected;
     setAllSelected(newSelectAllState);
 
@@ -149,12 +162,12 @@ export function useBlogContentGenerator(
     );
   };
 
-  const resetBatch = () => {
+  const resetBatch = (): void => {
     onReset();
   };
 
   // ZIP 파일로 다운로드 함수
-  const downloadResults = async () => {
+  const downloadResults = async (): Promise<void> => {
     const selectedResults = results.filter(
       (r) => r.status === "completed" && r.isSelected,
     );
@@ -172,7 +185,7 @@ export function useBlogContentGenerator(
       selectedResults.forEach((item) => {
         if (item.result) {
           // 파일명에 사용할 수 없는 문자 제거
-          const safeStoreName = item.storeName
+          const safeStoreName = (item.storeName || "")
             .replace(/[\\/:*?"<>|]/g, "_")
             .trim();
 

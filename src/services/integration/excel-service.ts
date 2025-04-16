@@ -1,4 +1,5 @@
-import { UploadExcelResult } from "@/types/excel";
+import { ApiResponse } from "@/types/api";
+import { ExcelRowData, UploadExcelResult } from "@/types/excel";
 
 export async function uploadExcelFile(file: File): Promise<UploadExcelResult> {
   const formData = new FormData();
@@ -14,7 +15,7 @@ export async function uploadExcelFile(file: File): Promise<UploadExcelResult> {
       throw new Error("파일 업로드 중 오류가 발생했습니다.");
     }
 
-    const result = await response.json();
+    const result = (await response.json()) as ApiResponse<ExcelRowData[]>;
 
     if (result.success) {
       return {
@@ -27,7 +28,7 @@ export async function uploadExcelFile(file: File): Promise<UploadExcelResult> {
         error: result.error || "알 수 없는 오류가 발생했습니다.",
       };
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("파일 업로드 오류:", error);
     return {
       success: false,

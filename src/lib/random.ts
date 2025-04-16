@@ -4,6 +4,6 @@ export function getRandomAgeGroup(): string {
   return ageGroups[randomIndex];
 }
 
-export function getRandomGender(): string {
+export function getRandomGender(): "male" | "female" {
   return Math.random() > 0.5 ? "male" : "female";
 }

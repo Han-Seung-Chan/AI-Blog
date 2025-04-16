@@ -97,7 +97,7 @@ export async function POST(
       const fileName = `${uuid()}`;
       const filePath = `blog_images/${postId}/${fileName}`;
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { data: _, error: uploadError } = await supabase.storage
         .from("uploads")
         .upload(filePath, fileData, {
           contentType: file.type,

@@ -8,8 +8,13 @@ export function formatDate(dateString: string): string {
   return `${year}-${month}-${day}`;
 }
 
-export const groupPostsByDate = (posts: BlogPost[]) => {
-  const grouped = {};
+interface DateGroup {
+  date: string;
+  posts: BlogPost[];
+}
+
+export const groupPostsByDate = (posts: BlogPost[]): DateGroup[] => {
+  const grouped: Record<string, BlogPost[]> = {};
 
   posts.forEach((post) => {
     const dateKey = formatDate(post.created_at);

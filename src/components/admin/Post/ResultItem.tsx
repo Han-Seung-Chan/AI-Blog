@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ViewResultModal } from "@/components/dialog/ViewResultModal";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { ProcessResult } from "@/types/workflow";
+import { ProcessResult, ProcessResultStatus } from "@/types/workflow";
 
 interface ResultItemProps {
   result: ProcessResult;
@@ -19,12 +19,48 @@ export function ResultItem({
   currentIndex,
   onSelectChange,
 }: ResultItemProps) {
-  const [isViewResultModalOpen, setIsViewResultModalOpen] = useState(false);
+  const [isViewResultModalOpen, setIsViewResultModalOpen] =
+    useState<boolean>(false);
 
   // 체크박스 변경 핸들러
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCheckboxChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
     if (onSelectChange) {
       onSelectChange(index, e.target.checked);
+    }
+  };
+
+  const getStatusComponent = (status: ProcessResultStatus) => {
+    switch (status) {
+      case "waiting":
+        return (
+          <span className="flex items-center text-gray-500">
+            <AlertCircle className="mr-1 h-4 w-4" />
+            대기중
+          </span>
+        );
+      case "processing":
+        return (
+          <span className="flex items-center text-blue-500">
+            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+            처리중
+          </span>
+        );
+      case "completed":
+        return (
+          <span className="flex items-center text-green-500">
+            <Check className="mr-1 h-4 w-4" />
+            완료
+          </span>
+        );
+      case "failed":
+        return (
+          <span className="flex items-center text-red-500">
+            <XCircle className="mr-1 h-4 w-4" />
+            실패
+          </span>
+        );
     }
   };
 
@@ -48,30 +84,7 @@ export function ResultItem({
         {result.storeName || `데이터 #${index + 1}`}
       </TableCell>
       <TableCell className="px-4 py-3">
-        {result.status === "waiting" && (
-          <span className="flex items-center text-gray-500">
-            <AlertCircle className="mr-1 h-4 w-4" />
-            대기중
-          </span>
-        )}
-        {result.status === "processing" && (
-          <span className="flex items-center text-blue-500">
-            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-            처리중
-          </span>
-        )}
-        {result.status === "completed" && (
-          <span className="flex items-center text-green-500">
-            <Check className="mr-1 h-4 w-4" />
-            완료
-          </span>
-        )}
-        {result.status === "failed" && (
-          <span className="flex items-center text-red-500">
-            <XCircle className="mr-1 h-4 w-4" />
-            실패
-          </span>
-        )}
+        {getStatusComponent(result.status)}
       </TableCell>
       <TableCell className="px-4 py-3">
         {result.status === "completed" && (

@@ -1,4 +1,3 @@
-// import { BlogPostCreationForm } from "@/components/admin/BlogPostCreationForm";
 import { PageClient } from "@/components/admin/Post/PageClient";
 import { AppLayout } from "@/components/layouts/AppLayout";
 

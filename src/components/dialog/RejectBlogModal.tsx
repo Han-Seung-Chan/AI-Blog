@@ -12,11 +12,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { BlogPost } from "@/types/blog";
 
 interface RejectBlogModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedPost: any;
+  selectedPost: BlogPost | null;
   onReject: (rejectionReason: string) => Promise<void>;
   isRejecting: boolean;
 }
@@ -28,10 +29,10 @@ export function RejectBlogModal({
   onReject,
   isRejecting,
 }: RejectBlogModalProps) {
-  const [rejectionReason, setRejectionReason] = useState("");
-  const [error, setError] = useState("");
+  const [rejectionReason, setRejectionReason] = useState<string>("");
+  const [error, setError] = useState<string>("");
 
-  const handleReject = async () => {
+  const handleReject = async (): Promise<void> => {
     if (!rejectionReason.trim()) {
       setError("거절 사유는 필수 항목입니다.");
       return;

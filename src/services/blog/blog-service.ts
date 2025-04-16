@@ -1,6 +1,13 @@
 import { getCurrentSession } from "@/services/auth/auth-service";
+import {
+  ApiResponse,
+  CompleteBlogPostRequest,
+  ResubmitBlogPostRequest,
+} from "@/types/api";
+import { BlogPost } from "@/types/blog";
+import { BlogImage } from "@/types/image";
 
-export async function getAvailableBlogPosts() {
+export async function getAvailableBlogPosts(): Promise<BlogPost[]> {
   const {
     data: { session },
   } = await getCurrentSession();
@@ -18,15 +25,15 @@ export async function getAvailableBlogPosts() {
       throw new Error("작성 가능한 블로그 글 목록을 불러오는데 실패했습니다.");
     }
 
-    const result = await response.json();
-    return result.data;
+    const result = (await response.json()) as ApiResponse<BlogPost[]>;
+    return result.data as BlogPost[];
   } catch (error) {
     console.error("블로그 글 목록 조회 오류:", error);
     throw error;
   }
 }
 
-export async function reserveBlogPost(postId: string) {
+export async function reserveBlogPost(postId: string): Promise<BlogPost> {
   const {
     data: { session },
   } = await getCurrentSession();
@@ -44,8 +51,8 @@ export async function reserveBlogPost(postId: string) {
       throw new Error(errorData.error || "블로그 글 예약에 실패했습니다.");
     }
 
-    const result = await response.json();
-    return result.data;
+    const result = (await response.json()) as ApiResponse<BlogPost>;
+    return result.data as BlogPost;
   } catch (error) {
     console.error("블로그 글 예약 오류:", error);
     throw error;
@@ -56,7 +63,7 @@ export async function completeBlogPost(
   postId: string,
   blogUrl: string,
   notes?: string,
-) {
+): Promise<BlogPost> {
   const {
     data: { session },
   } = await getCurrentSession();
@@ -70,7 +77,7 @@ export async function completeBlogPost(
       body: JSON.stringify({
         blogUrl,
         completionNotes: notes,
-      }),
+      } as CompleteBlogPostRequest),
     });
 
     if (!response.ok) {
@@ -78,15 +85,15 @@ export async function completeBlogPost(
       throw new Error(errorData.error || "블로그 글 완료 처리에 실패했습니다.");
     }
 
-    const result = await response.json();
-    return result.data;
+    const result = (await response.json()) as ApiResponse<BlogPost>;
+    return result.data as BlogPost;
   } catch (error) {
     console.error("블로그 글 완료 처리 오류:", error);
     throw error;
   }
 }
 
-export async function cancelReservation(postId: string) {
+export async function cancelReservation(postId: string): Promise<BlogPost> {
   const {
     data: { session },
   } = await getCurrentSession();
@@ -107,15 +114,15 @@ export async function cancelReservation(postId: string) {
       throw new Error(errorData.error || "예약 취소에 실패했습니다.");
     }
 
-    const result = await response.json();
-    return result.data;
+    const result = (await response.json()) as ApiResponse<BlogPost>;
+    return result.data as BlogPost;
   } catch (error) {
     console.error("예약 취소 오류:", error);
     throw error;
   }
 }
 
-export async function getMyAssignments() {
+export async function getMyAssignments(): Promise<BlogPost[]> {
   const {
     data: { session },
   } = await getCurrentSession();
@@ -132,8 +139,8 @@ export async function getMyAssignments() {
       throw new Error("내 블로그 글 목록을 불러오는데 실패했습니다.");
     }
 
-    const result = await response.json();
-    return result.data;
+    const result = (await response.json()) as ApiResponse<BlogPost[]>;
+    return result.data as BlogPost[];
   } catch (error) {
     console.error("내 블로그 글 목록 조회 오류:", error);
     throw error;
@@ -144,7 +151,7 @@ export async function resubmitBlogPost(
   postId: string,
   blogUrl: string,
   resubmissionNotes?: string,
-) {
+): Promise<BlogPost> {
   const {
     data: { session },
   } = await getCurrentSession();
@@ -158,7 +165,7 @@ export async function resubmitBlogPost(
       body: JSON.stringify({
         blogUrl,
         resubmissionNotes,
-      }),
+      } as ResubmitBlogPostRequest),
     });
 
     if (!response.ok) {
@@ -166,8 +173,8 @@ export async function resubmitBlogPost(
       throw new Error(errorData.error || "블로그 글 재제출에 실패했습니다.");
     }
 
-    const result = await response.json();
-    return result.data;
+    const result = (await response.json()) as ApiResponse<BlogPost>;
+    return result.data as BlogPost;
   } catch (error) {
     console.error("블로그 글 재제출 오류:", error);
     throw error;
@@ -175,7 +182,7 @@ export async function resubmitBlogPost(
 }
 
 // 블로그 포스트의 이미지 목록 조회 함수
-export async function getBlogPostImages(postId: string) {
+export async function getBlogPostImages(postId: string): Promise<BlogImage[]> {
   const {
     data: { session },
   } = await getCurrentSession();
@@ -196,8 +203,8 @@ export async function getBlogPostImages(postId: string) {
       );
     }
 
-    const result = await response.json();
-    return result.data || [];
+    const result = (await response.json()) as ApiResponse<BlogImage[]>;
+    return (result.data as BlogImage[]) || [];
   } catch (error) {
     console.error("이미지 목록 조회 오류:", error);
     throw error;

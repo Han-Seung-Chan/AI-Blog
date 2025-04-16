@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { AuthSession, User } from "@/types/auth";
 
 // 현재 세션 정보 조회
 export async function getCurrentSession() {
@@ -11,7 +12,10 @@ export async function getUserRole(userId: string) {
 }
 
 // 로그인 API 호출
-export async function loginUser(email: string, password: string) {
+export async function loginUser(
+  email: string,
+  password: string,
+): Promise<{ user: User; session: AuthSession }> {
   const response = await fetch("/api/auth/login", {
     method: "POST",
     headers: {
@@ -42,7 +46,7 @@ export async function registerUser(
   password: string,
   name: string,
   role: string,
-) {
+): Promise<User> {
   const response = await fetch("/api/auth/register", {
     method: "POST",
     headers: {
@@ -61,7 +65,7 @@ export async function registerUser(
 }
 
 // 로그아웃 API 호출
-export async function logoutUser() {
+export async function logoutUser(): Promise<void> {
   const response = await fetch("/api/auth/logout", {
     method: "POST",
     headers: {

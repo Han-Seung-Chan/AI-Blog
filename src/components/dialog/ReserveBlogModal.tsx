@@ -10,11 +10,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { BlogPost } from "@/types/blog";
 
 interface ReserveBlogModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedPost: any;
+  selectedPost: BlogPost | null;
   onReserve: () => Promise<void>;
   isReserving: boolean;
   error?: string;

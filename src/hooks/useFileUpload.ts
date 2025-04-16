@@ -4,12 +4,22 @@ import { transformExcelData } from "@/lib/excelDataTransformer";
 import { uploadExcelFile } from "@/services/integration/excel-service";
 import { ExcelRowData } from "@/types/excel";
 
-export function useFileUpload(onDataLoaded: (data: ExcelRowData[]) => void) {
+interface FileUploadState {
+  selectedFile: File | null;
+  uploadStatus: string;
+  isUploading: boolean;
+  handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleUpload: () => Promise<void>;
+}
+
+export function useFileUpload(
+  onDataLoaded: (data: ExcelRowData[]) => void,
+): FileUploadState {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string>("");
-  const [isUploading, setIsUploading] = useState(false);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const files = e.target.files;
     if (files && files.length > 0) {
       setSelectedFile(files[0]);
@@ -17,7 +27,7 @@ export function useFileUpload(onDataLoaded: (data: ExcelRowData[]) => void) {
     }
   };
 
-  const handleUpload = async () => {
+  const handleUpload = async (): Promise<void> => {
     if (!selectedFile) {
       setUploadStatus("파일을 선택해주세요.");
       return;
