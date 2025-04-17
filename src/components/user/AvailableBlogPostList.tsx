@@ -79,7 +79,7 @@ export function AvailableBlogPostList() {
     },
     {
       key: "images",
-      title: "이미지 등록",
+      title: "이미지",
       render: (post) => (
         <Button
           variant="outline"

@@ -1,28 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-
 import { supabase } from "@/lib/supabase";
+import { verifyUserRole } from "@/lib/auth-middleware";
 
 // 현재 사용자 프로필 조회
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // 인증 세션 확인
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+    const { user, errorResponse } = await verifyUserRole(request, "user");
+    if (errorResponse) return errorResponse;
 
-    if (sessionError || !session) {
-      return NextResponse.json(
-        { error: "인증되지 않았습니다." },
-        { status: 401 },
-      );
-    }
-
-    // 사용자 정보 조회
+    // 사용자 정보 조회 (포인트 필드 포함)
     const { data: userData, error: userError } = await supabase
       .from("users")
-      .select("*")
-      .eq("id", session.user.id)
+      .select("*, points")
+      .eq("id", user.id)
       .single();
 
     if (userError) {

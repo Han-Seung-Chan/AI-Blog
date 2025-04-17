@@ -129,7 +129,7 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
     },
     {
       key: "images",
-      title: "이미지 등록",
+      title: "이미지",
       render: (post) => (
         <Button
           variant="outline"

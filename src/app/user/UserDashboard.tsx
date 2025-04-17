@@ -11,6 +11,7 @@ import {
   getAvailableBlogPosts,
   getMyAssignments,
 } from "@/services/blog/blog-service";
+import { UserPointsInfo } from "@/components/user/UserPointsInfo";
 
 export function UserDashboard() {
   const [stats, setStats] = useState({
@@ -70,6 +71,9 @@ export function UserDashboard() {
           </Button>
         </Link>
       </div>
+
+      {/* 포인트 정보 추가 */}
+      <UserPointsInfo />
 
       {/* 통계 카드 */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">

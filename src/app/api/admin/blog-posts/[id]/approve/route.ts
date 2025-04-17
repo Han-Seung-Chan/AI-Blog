@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyUserRole } from "@/lib/auth-middleware";
 import { supabase } from "@/lib/supabase";
 
+const BLOG_APPROVAL_POINTS = 500; // 블로그 승인 시 지급할 포인트
+
 export async function PUT(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },
@@ -36,19 +38,13 @@ export async function PUT(
       );
     }
 
-    // 블로그 글 승인 처리
-    const { data, error } = await supabase
-      .from("blog_posts")
-      .update({
-        status: "approved",
-        admin_feedback: adminFeedback,
-        approved_by: user.id,
-        approved_at: new Date(),
-        updated_at: new Date(),
-      })
-      .eq("id", postId)
-      .select()
-      .single();
+    // 수퍼베이스 트랜잭션 시작
+    const { data, error } = await supabase.rpc("approve_blog_with_points", {
+      p_post_id: postId,
+      p_admin_id: user.id,
+      p_admin_feedback: adminFeedback || "",
+      p_points_amount: BLOG_APPROVAL_POINTS,
+    });
 
     if (error) {
       return NextResponse.json(
@@ -57,18 +53,21 @@ export async function PUT(
       );
     }
 
-    // 활동 로그 기록
-    await supabase.from("activity_logs").insert({
-      user_id: user.id,
-      blog_post_id: postId,
-      action: "approve",
-      status_before: "completed",
-      status_after: "approved",
-      notes: adminFeedback || "관리자가 블로그 글 승인",
-      created_at: new Date(),
-    });
+    // 승인 후 블로그 포스트 정보 조회
+    const { data: postData, error: postError } = await supabase
+      .from("blog_posts")
+      .select("*")
+      .eq("id", postId)
+      .single();
 
-    return NextResponse.json({ success: true, data });
+    if (postError) {
+      return NextResponse.json(
+        { error: `승인된 블로그 글 조회 오류: ${postError.message}` },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json({ success: true, data: postData });
   } catch (error) {
     console.error("블로그 글 승인 처리 중 오류:", error);
     return NextResponse.json(
