@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { AuthSession, User } from "@/types/auth";
+import { AuthSession, User, UserRegisterData } from "@/types/auth";
 
 // 현재 세션 정보 조회
 export async function getCurrentSession() {
@@ -40,19 +40,14 @@ export async function loginUser(
   return result.data;
 }
 
-// 회원가입 API 호출
-export async function registerUser(
-  email: string,
-  password: string,
-  name: string,
-  role: string,
-): Promise<User> {
+// 회원가입 API 호출 (수정됨)
+export async function registerUser(userData: UserRegisterData): Promise<User> {
   const response = await fetch("/api/auth/register", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ email, password, name, role }),
+    body: JSON.stringify(userData),
   });
 
   const result = await response.json();

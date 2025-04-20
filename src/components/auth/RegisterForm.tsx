@@ -7,25 +7,74 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from "@/hooks/useAuth";
 
 export function RegisterForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("user");
+  const [blogId, setBlogId] = useState("");
+  const [phone, setPhone] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [activeTab, setActiveTab] = useState<"user" | "admin">("user");
   const { register, isLoading, error } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await register(email, password, name, role);
+
+    // 일반 사용자 회원가입인 경우 추가 정보 포함
+    if (activeTab === "user") {
+      await register({
+        email,
+        password,
+        name,
+        role: "user" as const,
+        blogId,
+        phone,
+        bankName,
+        accountNumber,
+      });
+    } else {
+      await register({
+        email,
+        password,
+        name,
+        role: "admin" as const,
+      });
+    }
   };
 
   return (
     <Card className="mx-auto w-full max-w-md">
       <CardHeader>
         <CardTitle>회원가입</CardTitle>
+
+        {/* 탭 버튼 */}
+        <div className="mt-4 flex border-b">
+          <button
+            className={`px-4 pb-2 ${
+              activeTab === "user"
+                ? "border-primary border-b-2 font-medium"
+                : "text-muted-foreground"
+            }`}
+            onClick={() => setActiveTab("user")}
+            type="button"
+          >
+            일반 사용자
+          </button>
+          <button
+            className={`px-4 pb-2 ${
+              activeTab === "admin"
+                ? "border-primary border-b-2 font-medium"
+                : "text-muted-foreground"
+            }`}
+            onClick={() => setActiveTab("admin")}
+            type="button"
+          >
+            관리자
+          </button>
+        </div>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -61,23 +110,58 @@ export function RegisterForm() {
               required
             />
           </div>
-          <div className="space-y-2">
-            <Label>계정 유형</Label>
-            <RadioGroup
-              value={role}
-              onValueChange={setRole}
-              className="flex space-x-4"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="user" id="user" />
-                <Label htmlFor="user">일반 사용자</Label>
+
+          {/* 일반 사용자 탭에서만 표시되는 추가 필드 */}
+          {activeTab === "user" && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="blogId">블로그 ID</Label>
+                <Input
+                  id="blogId"
+                  value={blogId}
+                  onChange={(e) => setBlogId(e.target.value)}
+                  placeholder="블로그 URL 입력"
+                  required
+                />
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="admin" id="admin" />
-                <Label htmlFor="admin">관리자</Label>
+              <div className="space-y-2">
+                <Label htmlFor="phone">연락처</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="연락처 입력"
+                  required
+                />
               </div>
-            </RadioGroup>
-          </div>
+
+              <div className="mt-6 border-t pt-4">
+                <h3 className="mb-3 text-sm font-medium">정산을 위한 정보</h3>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bankName">은행명</Label>
+                <Input
+                  id="bankName"
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  placeholder="은행명 입력"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="accountNumber">계좌번호</Label>
+                <Input
+                  id="accountNumber"
+                  value={accountNumber}
+                  onChange={(e) => setAccountNumber(e.target.value)}
+                  placeholder="계좌번호 입력('-' 없이)"
+                  required
+                />
+              </div>
+            </>
+          )}
 
           {error && <p className="text-destructive text-sm">{error}</p>}
 

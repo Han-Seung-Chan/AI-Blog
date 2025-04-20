@@ -9,20 +9,14 @@ import {
   registerUser,
   setupAuthStateChangeListener,
 } from "@/services/auth/auth-service";
-import { User } from "@/types/auth";
-
+import { User, UserRegisterData } from "@/types/auth";
 interface AuthState {
   user: User | null;
   isAdmin: boolean;
   isLoading: boolean;
   error: string;
   login: (email: string, password: string) => Promise<void>;
-  register: (
-    email: string,
-    password: string,
-    name: string,
-    role: string,
-  ) => Promise<void>;
+  register: (userData: UserRegisterData) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -102,20 +96,15 @@ export function useAuth(): AuthState {
     }
   };
 
-  // 회원가입 함수
-  const register = async (
-    email: string,
-    password: string,
-    name: string,
-    role: string,
-  ) => {
+  // 회원가입 함수 - 수정됨
+  const register = async (userData: UserRegisterData) => {
     setIsLoading(true);
     setError("");
     try {
-      await registerUser(email, password, name, role);
+      await registerUser(userData);
 
       // 자동 로그인 (회원가입 후)
-      await login(email, password);
+      await login(userData.email, userData.password);
     } catch (err: any) {
       setError(err.message || "회원가입 중 오류가 발생했습니다");
       setIsLoading(false);
