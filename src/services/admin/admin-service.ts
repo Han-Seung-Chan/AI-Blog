@@ -310,3 +310,36 @@ export async function getAllUsers(): Promise<User[]> {
     throw error;
   }
 }
+
+export async function updateUserApprovalPoints(
+  userId: string,
+  points: number,
+): Promise<User> {
+  const {
+    data: { session },
+  } = await getCurrentSession();
+
+  try {
+    const response = await fetch(`/api/admin/users/${userId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ blog_approval_points: points }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.error || "사용자 정보 업데이트에 실패했습니다.",
+      );
+    }
+
+    const result = (await response.json()) as ApiResponse<User>;
+    return result.data as User;
+  } catch (error) {
+    console.error("사용자 정보 업데이트 오류:", error);
+    throw error;
+  }
+}

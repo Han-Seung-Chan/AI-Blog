@@ -10,6 +10,7 @@ export interface User {
   bank_name?: string | null;
   account_number?: string | null;
   points?: number | null;
+  blog_approval_points?: number | null;
 }
 
 export interface AuthSession {

@@ -3,8 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyUserRole } from "@/lib/auth-middleware";
 import { supabase } from "@/lib/supabase";
 
-const BLOG_APPROVAL_POINTS = 500; // 블로그 승인 시 지급할 포인트
-
 export async function PUT(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },
@@ -38,12 +36,29 @@ export async function PUT(
       );
     }
 
-    // 수퍼베이스 트랜잭션 시작
+    // 작성자의 블로그 승인 포인트 조회
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("blog_approval_points")
+      .eq("id", checkData.assigned_to)
+      .single();
+
+    if (userError) {
+      return NextResponse.json(
+        { error: `작성자 정보 조회 오류: ${userError.message}` },
+        { status: 500 },
+      );
+    }
+
+    // 유저별 설정된 포인트
+    const pointsAmount = userData.blog_approval_points;
+
+    // 수퍼베이스 트랜잭션 실행
     const { data, error } = await supabase.rpc("approve_blog_with_points", {
       p_post_id: postId,
       p_admin_id: user.id,
       p_admin_feedback: adminFeedback || "",
-      p_points_amount: BLOG_APPROVAL_POINTS,
+      p_points_amount: pointsAmount,
     });
 
     if (error) {

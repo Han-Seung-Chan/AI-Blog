@@ -120,3 +120,15 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 숫자 입력 필드의 화살표 버튼 제거 */
+.no-spin-buttons::-webkit-outer-spin-button,
+.no-spin-buttons::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox에 대한 대응 */
+.no-spin-buttons {
+  -moz-appearance: textfield;
+}

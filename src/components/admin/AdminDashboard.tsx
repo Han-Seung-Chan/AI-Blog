@@ -5,11 +5,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { AdminBlogPostList } from "@/components/admin/AdminBlogPostList";
+import { UserList } from "@/components/admin/UserList";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getMyBlogPosts } from "@/services/admin/admin-service";
 import { BlogPost } from "@/types/blog";
-import { UserList } from "@/components/admin/UserList";
 
 interface DashboardStats {
   total: number;
