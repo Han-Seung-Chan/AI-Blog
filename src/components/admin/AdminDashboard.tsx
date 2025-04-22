@@ -17,6 +17,7 @@ interface DashboardStats {
   reserved: number;
   completed: number;
   approved: number;
+  rejected: number;
 }
 
 export function AdminDashboard() {
@@ -26,6 +27,7 @@ export function AdminDashboard() {
     reserved: 0,
     completed: 0,
     approved: 0,
+    rejected: 0,
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -41,6 +43,7 @@ export function AdminDashboard() {
           reserved: posts.filter((post) => post.status === "reserved").length,
           completed: posts.filter((post) => post.status === "completed").length,
           approved: posts.filter((post) => post.status === "approved").length,
+          rejected: posts.filter((post) => post.status === "rejected").length,
         };
 
         setStats(newStats);
@@ -106,11 +109,13 @@ export function AdminDashboard() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">완료 대기</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              완료/수정 대기
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-orange-500">
-              {stats.completed}
+              {stats.completed + stats.rejected}
             </p>
           </CardContent>
         </Card>
