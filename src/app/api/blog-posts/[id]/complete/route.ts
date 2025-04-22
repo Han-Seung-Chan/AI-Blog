@@ -22,6 +22,26 @@ export async function PUT(
     const { user, errorResponse } = await verifyUserRole(request, "user");
     if (errorResponse) return errorResponse;
 
+    // 일일 작업 제한 확인
+    const { data: limitData, error: limitError } = await supabase.rpc(
+      "increment_daily_work_count",
+      {
+        p_user_id: user.id,
+      },
+    );
+
+    if (limitError) {
+      return NextResponse.json(
+        { error: `작업 제한 확인 오류: ${limitError.message}` },
+        { status: 500 },
+      );
+    }
+
+    // 작업 한도에 도달한 경우
+    if (!limitData.success) {
+      return NextResponse.json({ error: limitData.message }, { status: 429 });
+    }
+
     // 블로그 글 상태 확인 (내가 예약한 글인지)
     const { data: checkData, error: checkError } = await supabase
       .from("blog_posts")
@@ -76,7 +96,15 @@ export async function PUT(
       created_at: new Date(),
     });
 
-    return NextResponse.json({ success: true, data });
+    return NextResponse.json({
+      success: true,
+      data,
+      workCount: {
+        current: limitData.current_count,
+        max: limitData.max_count,
+        remaining: limitData.remaining_count,
+      },
+    });
   } catch (error) {
     console.error("완료 처리 중 오류:", error);
     return NextResponse.json(

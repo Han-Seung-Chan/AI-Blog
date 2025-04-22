@@ -82,7 +82,11 @@ export async function completeBlogPost(
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || "블로그 글 완료 처리에 실패했습니다.");
+      const error = new Error(
+        errorData.error || "블로그 글 완료 처리에 실패했습니다.",
+      );
+      (error as any).response = response;
+      throw error;
     }
 
     const result = (await response.json()) as ApiResponse<BlogPost>;

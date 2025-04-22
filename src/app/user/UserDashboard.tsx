@@ -6,12 +6,13 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DailyWorkLimitInfo } from "@/components/user/DailyWorkLimitInfo";
 import { UserBlogPostList } from "@/components/user/UserBlogPostList";
+import { UserPointsInfo } from "@/components/user/UserPointsInfo";
 import {
   getAvailableBlogPosts,
   getMyAssignments,
 } from "@/services/blog/blog-service";
-import { UserPointsInfo } from "@/components/user/UserPointsInfo";
 
 export function UserDashboard() {
   const [stats, setStats] = useState({
@@ -72,8 +73,11 @@ export function UserDashboard() {
         </Link>
       </div>
 
-      {/* 포인트 정보 추가 */}
-      <UserPointsInfo />
+      {/* 일일 작업 제한 정보와 포인트 정보 */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <DailyWorkLimitInfo />
+        <UserPointsInfo />
+      </div>
 
       {/* 통계 카드 */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">

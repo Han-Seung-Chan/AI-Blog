@@ -71,7 +71,13 @@ export function UserBlogPostList({ onStatusChange }: UserBlogPostListProps) {
       setIsCompleteBlogModal(false);
     } catch (error) {
       console.error("블로그 글 완료 처리 오류:", error);
-      setUrlError("완료 처리 중 오류가 발생했습니다.");
+      if (error.response?.status === 429) {
+        setUrlError(
+          "오늘 작업 가능한 횟수를 모두 사용했습니다. 내일 다시 시도해주세요.",
+        );
+      } else {
+        setUrlError("완료 처리 중 오류가 발생했습니다.");
+      }
     } finally {
       setIsCompleting(false);
     }

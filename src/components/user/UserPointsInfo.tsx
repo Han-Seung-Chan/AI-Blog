@@ -4,8 +4,8 @@ import { Coins, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PointTransaction } from "@/types/points";
 import { getUserPoints } from "@/services/user/user-service";
+import { PointTransaction } from "@/types/points";
 
 export function UserPointsInfo() {
   const [points, setPoints] = useState<number>(0);
