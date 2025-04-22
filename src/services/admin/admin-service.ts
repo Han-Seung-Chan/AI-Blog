@@ -6,6 +6,7 @@ import {
   DashboardStats,
   RejectBlogPostRequest,
 } from "@/types/api";
+import { User } from "@/types/auth";
 import { BlogPost, BlogPostStatus } from "@/types/blog";
 import { BlogImage } from "@/types/image";
 import { GenerationData } from "@/types/workflow";
@@ -280,6 +281,32 @@ export async function getBlogPostImages(postId: string): Promise<BlogImage[]> {
     return (result.data as BlogImage[]) || [];
   } catch (error) {
     console.error("이미지 목록 조회 오류:", error);
+    throw error;
+  }
+}
+
+export async function getAllUsers(): Promise<User[]> {
+  const {
+    data: { session },
+  } = await getCurrentSession();
+
+  try {
+    const response = await fetch("/api/admin/users", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("사용자 목록을 불러오는데 실패했습니다.");
+    }
+
+    const result = (await response.json()) as ApiResponse<User[]>;
+    return result.data as User[];
+  } catch (error) {
+    console.error("사용자 목록 조회 오류:", error);
     throw error;
   }
 }

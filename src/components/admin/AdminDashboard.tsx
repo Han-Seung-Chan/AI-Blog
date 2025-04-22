@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getMyBlogPosts } from "@/services/admin/admin-service";
 import { BlogPost } from "@/types/blog";
+import { UserList } from "@/components/admin/UserList";
 
 interface DashboardStats {
   total: number;
@@ -128,6 +129,9 @@ export function AdminDashboard() {
 
       {/* 블로그 글 목록 */}
       <AdminBlogPostList />
+
+      {/* 사용자 목록 추가 */}
+      <UserList />
     </div>
   );
 }

@@ -9,6 +9,7 @@ export interface User {
   phone?: string | null;
   bank_name?: string | null;
   account_number?: string | null;
+  points?: number | null;
 }
 
 export interface AuthSession {
