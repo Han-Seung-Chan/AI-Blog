@@ -1,7 +1,6 @@
-export function fillPromptTemplate(
-  template: string,
-  data: Record<string, any>,
-): string {
+import { PromptData } from "@/types/prompt";
+
+export function fillPromptTemplate(template: string, data: PromptData): string {
   let filledTemplate = template;
 
   Object.entries(data).forEach(([key, value]) => {

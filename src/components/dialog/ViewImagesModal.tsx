@@ -1,6 +1,7 @@
 "use client";
 
 import { Download, Loader2 } from "lucide-react";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -56,9 +57,11 @@ export function ViewImagesModal({
                   key={image.id}
                   className="group relative overflow-hidden rounded-md border bg-white"
                 >
-                  <img
+                  <Image
                     src={image.url}
                     alt="블로그 이미지"
+                    width={400}
+                    height={300}
                     className="h-40 w-full object-cover"
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-white/80 opacity-0 transition-opacity group-hover:opacity-100">

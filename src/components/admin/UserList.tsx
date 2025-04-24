@@ -45,7 +45,7 @@ export function UserList() {
           initialEditState[user.id] = user.blog_approval_points;
         });
         setEditingPoints(initialEditState);
-      } catch (err: any) {
+      } catch (err) {
         console.error("사용자 목록 조회 오류:", err);
         setError("사용자 목록을 가져오는데 실패했습니다.");
       } finally {

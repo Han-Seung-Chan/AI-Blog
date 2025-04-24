@@ -82,7 +82,7 @@ export function useBlogContentGenerator(
 
       // 성공 항목 추가
       setHasCompletedItems(true);
-    } catch (error: any) {
+    } catch (error) {
       setResults((prev) =>
         prev.map((result, idx) =>
           idx === index

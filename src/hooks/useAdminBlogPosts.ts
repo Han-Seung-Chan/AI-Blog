@@ -21,7 +21,7 @@ export function useAdminBlogPosts(): AdminBlogPostsState {
       setError(null);
       const data = await getMyBlogPosts();
       setPosts(data);
-    } catch (err: any) {
+    } catch (err) {
       console.error("블로그 글 목록 조회 오류:", err);
       setError("블로그 글 목록을 가져오는데 실패했습니다.");
     } finally {

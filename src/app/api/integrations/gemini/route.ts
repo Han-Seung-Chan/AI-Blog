@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { API_ENDPOINT } from "@/constant/gemini";
 import { BLOG_REVIEW_TEMPLATE } from "@/constant/prompts";
 import { fillPromptTemplate } from "@/lib/stringFill";
+import { PromptData } from "@/types/prompt";
 
 // 재시도 설정
 const MAX_RETRIES = 5;
@@ -101,7 +102,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 사용자 입력 데이터 정리
-    const promptData = {
+    const promptData: PromptData = {
       storeName: formData.storeName,
       storeDetails: formData.storeDetails,
       storeURL: formData.storeURL,

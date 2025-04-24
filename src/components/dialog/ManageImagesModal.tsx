@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2, Plus, Trash2 } from "lucide-react";
+import Image from "next/image";
 import { useRef } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -95,9 +96,11 @@ export function ManageImagesModal({
                   key={encodeURI(image.id)}
                   className="group relative overflow-hidden rounded-md border"
                 >
-                  <img
+                  <Image
                     src={image.url}
                     alt="블로그 이미지"
+                    width={400}
+                    height={300}
                     className="h-40 w-full object-cover"
                   />
                   <div className="absolute top-2 right-2">

@@ -89,7 +89,7 @@ export function useAuth(): AuthState {
       } else {
         router.push("/dashboard");
       }
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || "로그인 중 오류가 발생했습니다");
     } finally {
       setIsLoading(false);
@@ -102,11 +102,12 @@ export function useAuth(): AuthState {
     setError("");
     try {
       await registerUser(userData);
-
       // 자동 로그인 (회원가입 후)
       await login(userData.email, userData.password);
-    } catch (err: any) {
-      setError(err.message || "회원가입 중 오류가 발생했습니다");
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "회원가입 중 오류가 발생했습니다";
+      setError(errorMessage);
       setIsLoading(false);
     }
   };
@@ -117,7 +118,7 @@ export function useAuth(): AuthState {
     try {
       await logoutUser();
       router.push("/login");
-    } catch (err) {
+    } catch {
       setError("로그아웃 중 오류가 발생했습니다");
     } finally {
       setIsLoading(false);

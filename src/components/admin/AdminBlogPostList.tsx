@@ -1,7 +1,7 @@
 "use client";
 
 import { BookImage, Loader2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { BlogLink } from "@/components/common/BlogLink";
 import { BlogPostTable } from "@/components/common/BlogPostTable";
@@ -150,10 +150,14 @@ export function AdminBlogPostList() {
     }
   };
 
+  const refreshPostsCallback = useCallback(async () => {
+    refreshPosts();
+  }, []);
+
   useEffect(() => {
     if (isImageDialogOpen) return;
-    refreshPosts();
-  }, [isImageDialogOpen]);
+    refreshPostsCallback();
+  }, [isImageDialogOpen, refreshPostsCallback]);
 
   const columns: BlogTableColumn[] = [
     { key: "store_name", title: "매장명" },

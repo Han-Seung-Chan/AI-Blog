@@ -28,7 +28,7 @@ export async function uploadExcelFile(file: File): Promise<UploadExcelResult> {
         error: result.error || "알 수 없는 오류가 발생했습니다.",
       };
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error("파일 업로드 오류:", error);
     return {
       success: false,

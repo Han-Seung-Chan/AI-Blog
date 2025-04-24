@@ -7,6 +7,10 @@ import {
 import { BlogPost } from "@/types/blog";
 import { BlogImage } from "@/types/image";
 
+interface ErrorWithResponse extends Error {
+  response?: Response;
+}
+
 export async function getAvailableBlogPosts(): Promise<BlogPost[]> {
   const {
     data: { session },
@@ -85,7 +89,7 @@ export async function completeBlogPost(
       const error = new Error(
         errorData.error || "블로그 글 완료 처리에 실패했습니다.",
       );
-      (error as any).response = response;
+      (error as ErrorWithResponse).response = response;
       throw error;
     }
 

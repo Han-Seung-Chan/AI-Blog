@@ -1,6 +1,7 @@
 import { getCurrentSession } from "@/services/auth/auth-service";
 import { ApiResponse } from "@/types/api";
 import { PointResponse } from "@/types/points";
+import { DailyWorkCount } from "@/types/user";
 
 export async function getUserPoints(): Promise<PointResponse> {
   const {
@@ -29,7 +30,7 @@ export async function getUserPoints(): Promise<PointResponse> {
 }
 
 // 사용자의 일일 작업 횟수 조회
-export async function getUserDailyWorkCount(): Promise<any> {
+export async function getUserDailyWorkCount(): Promise<DailyWorkCount> {
   const {
     data: { session },
   } = await getCurrentSession();
@@ -47,7 +48,7 @@ export async function getUserDailyWorkCount(): Promise<any> {
       throw new Error("작업 횟수 정보를 불러오는데 실패했습니다.");
     }
 
-    const result = (await response.json()) as ApiResponse<any>;
+    const result = (await response.json()) as ApiResponse<DailyWorkCount>;
     return result.data;
   } catch (error) {
     console.error("작업 횟수 정보 조회 오류:", error);

@@ -82,7 +82,7 @@ async function crawlRestaurantInfo(url: string) {
       data.status = "failed";
       console.error("장소를 찾을 수 없거나 iframe 접근 실패:", e);
     }
-  } catch (error: unknown) {
+  } catch (error) {
     data.status = "error";
     console.error("크롤링 오류:", error);
   } finally {
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
 
     const result = await crawlRestaurantInfo(body.url);
     return NextResponse.json({ success: true, data: result });
-  } catch (error: unknown) {
+  } catch (error) {
     console.error("API 처리 중 오류:", error);
     return NextResponse.json(
       {

@@ -5,13 +5,7 @@ import { useEffect, useState } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserDailyWorkCount } from "@/services/user/user-service";
-
-interface DailyWorkCount {
-  current_count: number;
-  max_count: number;
-  remaining_count: number;
-  can_work: boolean;
-}
+import { DailyWorkCount } from "@/types/user";
 
 export function DailyWorkLimitInfo() {
   const [workCount, setWorkCount] = useState<DailyWorkCount | null>(null);
@@ -25,7 +19,7 @@ export function DailyWorkLimitInfo() {
         setError(null);
         const data = await getUserDailyWorkCount();
         setWorkCount(data);
-      } catch (err: any) {
+      } catch (err) {
         console.error("작업 횟수 정보 조회 오류:", err);
         setError("작업 횟수 정보를 불러오는데 실패했습니다.");
       } finally {
@@ -44,8 +38,6 @@ export function DailyWorkLimitInfo() {
     if (!workCount) return "text-blue-500";
 
     const { current_count, max_count } = workCount;
-    console.log(workCount);
-    console.log(max_count);
     if (current_count >= max_count) return "text-red-500";
     if (current_count >= max_count * 0.7) return "text-orange-500";
     return "text-green-500";

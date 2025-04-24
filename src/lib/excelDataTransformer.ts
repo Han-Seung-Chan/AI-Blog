@@ -1,6 +1,6 @@
 import { ExcelRowData } from "@/types/excel";
 
-export function transformExcelData(rows: any[]): ExcelRowData[] {
+export function transformExcelData(rows: ExcelRowData[]): ExcelRowData[] {
   // 필드명 매핑 정의
   const fieldMapping: Record<string, keyof ExcelRowData> = {
     상호명: "storeName",

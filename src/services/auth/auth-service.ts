@@ -1,3 +1,5 @@
+import { Session } from "@supabase/supabase-js";
+
 import { supabase } from "@/lib/supabase";
 import { AuthSession, User, UserRegisterData } from "@/types/auth";
 
@@ -75,7 +77,9 @@ export async function logoutUser(): Promise<void> {
 }
 
 // 인증 상태 변경 리스너 설정
-export function setupAuthStateChangeListener(callback: (session: any) => void) {
+export function setupAuthStateChangeListener(
+  callback: (session: Session | null) => void,
+) {
   return supabase.auth.onAuthStateChange(async (event, session) => {
     callback(session);
   });

@@ -22,7 +22,7 @@ export function UserPointsInfo() {
 
         setPoints(data.points);
         setTransactions(data.transactions);
-      } catch (err: any) {
+      } catch (err) {
         console.error("포인트 정보 조회 오류:", err);
         setError("포인트 정보를 불러오는데 실패했습니다.");
       } finally {

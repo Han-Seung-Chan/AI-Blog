@@ -54,12 +54,15 @@ export async function PUT(
     const pointsAmount = userData.blog_approval_points;
 
     // 수퍼베이스 트랜잭션 실행
-    const { data, error } = await supabase.rpc("approve_blog_with_points", {
-      p_post_id: postId,
-      p_admin_id: user.id,
-      p_admin_feedback: adminFeedback || "",
-      p_points_amount: pointsAmount,
-    });
+    const { data: _data, error } = await supabase.rpc(
+      "approve_blog_with_points",
+      {
+        p_post_id: postId,
+        p_admin_id: user.id,
+        p_admin_feedback: adminFeedback || "",
+        p_points_amount: pointsAmount,
+      },
+    );
 
     if (error) {
       return NextResponse.json(
