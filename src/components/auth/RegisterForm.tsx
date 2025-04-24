@@ -53,7 +53,7 @@ export function RegisterForm() {
         {/* 탭 버튼 */}
         <div className="mt-4 flex border-b">
           <button
-            className={`px-4 pb-2 ${
+            className={`w-full px-4 pb-2 ${
               activeTab === "user"
                 ? "border-primary border-b-2 font-medium"
                 : "text-muted-foreground"
@@ -63,8 +63,8 @@ export function RegisterForm() {
           >
             일반 사용자
           </button>
-          <button
-            className={`px-4 pb-2 ${
+          {/* <button
+            className={`w-full px-4 pb-2 ${
               activeTab === "admin"
                 ? "border-primary border-b-2 font-medium"
                 : "text-muted-foreground"
@@ -73,7 +73,7 @@ export function RegisterForm() {
             type="button"
           >
             관리자
-          </button>
+          </button> */}
         </div>
       </CardHeader>
       <CardContent>
